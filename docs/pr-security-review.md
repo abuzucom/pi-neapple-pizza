@@ -66,3 +66,12 @@ Provider endpoints remain allowlisted in the adapter.
 `DRIFT.md` records pi-specific choices.
 Source-repository adopter records do not establish this repository's registration.
 No local test establishes server-side branch protection or client trust.
+
+## Review eligibility
+
+Completed check runs never suppress the model review.
+Verdict text cannot establish workflow provenance.
+Each eligible completion can invoke another review for the same head.
+Concurrency remains bounded by the existing per-head workflow group.
+Read-only default tokens do not prevent workflows from requesting broader permissions.
+Required-check spoofing requires independent workflow provenance controls.

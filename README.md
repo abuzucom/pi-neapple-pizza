@@ -40,3 +40,11 @@ make lint PYTHON=python
 Repository controls provide defense in depth.
 Client trust and server-side branch protection require operator configuration.
 The future harness remains planned.
+
+## Runtime prerequisites
+
+Require Python 3.12 or newer for bundle activation and native Git hooks.
+Retain junction rejection on Windows.
+The regression suite also requires Node.js for workflow JavaScript execution.
+Native client adapters inspect observable shell and file tools.
+Consult `docs/gate-threat-model.md` for consent and hosted-tool limitations.

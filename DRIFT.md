@@ -77,3 +77,28 @@ Compare future source revisions against the recorded baseline.
 Record each deliberate difference and verification result.
 Classify incoming changes as adopt, adapt, reject, or defer.
 Do not relax a gate to resolve an adoption block.
+
+## Security remediation differences
+
+- D011 removes check-run verdict deduplication from the review caller.
+  Untrusted check writers cannot suppress the real model review through verdict text.
+  Required-check provenance remains a separate GitHub control.
+- D012 adds native adapters under every non-Claude pre-tool registration.
+  The adapters invoke unchanged canonical shell, infrastructure, and consent gates.
+  The adapters call canonical identity inspection for effective Git contexts.
+  Native consent-required operations deny without a supported authorization path.
+- D013 anchors native launchers to the enclosing Git root.
+  Fixed launcher code uses a bounded ancestor list and separate hook arguments.
+  Missing roots, missing scripts, and launch exceptions exit 2.
+  Launcher checks exercise the exact registered commands from subdirectories.
+- D014 requires Python 3.12 before activation path access.
+  The installer retains Windows junction checks.
+- D015 retains the original activation journal during remediation.
+  A separate backup generation records current originals before publication.
+
+The shared adoption and launcher checkers add native registration requirements.
+The shared manifest retains every original entry.
+Source provenance retains the immutable donor digests.
+The local receipt records each deliberate source difference separately.
+No change removes a gate, matcher, event, test assertion, or required security check.
+The coupled client changes activate in one complete transaction.

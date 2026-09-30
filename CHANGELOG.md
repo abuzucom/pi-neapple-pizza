@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.1] (2026-09-30)
+
+### Security
+
+- Remove spoofable check-run review suppression.
+- Enforce canonical gates through native client payload adapters.
+- Anchor registered hook launchers and verify subdirectory execution.
+- Reject unsupported Python runtimes before activation access.
+- Retain activation backups across independent transaction generations.
+- Document client consent and hosted-tool coverage limits.
+
 ## [0.1.0] (2026-09-30)
 
 ### Added

@@ -44,3 +44,5 @@ repository hook can verify disclosure, the stop, plan mode, or continuation
 claims. An external harness must enforce them.
 
 `AGENTS.md` controls when linked documents conflict with it.
+
+Native consent calls deny. Hosted tools lack coverage.

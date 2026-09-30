@@ -107,6 +107,14 @@ def main() -> int:
                     file=sys.stderr,
                 )
                 return 1
+    if all((root / relative).is_file() for relative in (
+            ".codex/hooks.json", ".gemini/settings.json", ".agents/hooks.json")):
+        try:
+            from check_native_hook_launchers import check_native_launchers
+            check_native_launchers(root)
+        except (ImportError, OSError, ValueError, subprocess.SubprocessError) as error:
+            print(f"native hook launch verification failed: {error}", file=sys.stderr)
+            return 1
     return 0
 
 

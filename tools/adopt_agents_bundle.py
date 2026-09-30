@@ -33,7 +33,8 @@ def run_checks(root: Path) -> None:
                        cwd=root, check=True, timeout=60)
 
 
-def install_bundle(root: Path, candidate: Path, record: dict) -> None:
+def install_bundle(root: Path, candidate: Path, record: dict,
+                   *, backup_relative: str = ".gate-staging/activation-backup") -> None:
     """Activate all artifacts in one invocation with registrations last."""
     files = dict(record["files"])
     verify_files(candidate, files)
@@ -45,17 +46,18 @@ def install_bundle(root: Path, candidate: Path, record: dict) -> None:
         relative = ".git/hooks/" + name
         sources[relative] = candidate / "tools" / "git-hooks" / name
         files[relative] = hashlib.sha256(sources[relative].read_bytes()).hexdigest()
-    backup = root / ".gate-staging" / "activation-backup"
+    backup = checked_target(root, backup_relative)
     order = sorted(files, key=lambda name: (name in REGISTRATIONS, name))
-    transaction = prepare_transaction(root, sources, {name: files[name] for name in order})
+    transaction = prepare_transaction(root, sources, {name: files[name] for name in order},
+                                      backup_relative=backup_relative)
     try:
-        publish_transaction(root, transaction)
+        publish_transaction(root, transaction, backup_relative=backup_relative)
         verify_files(root, files)
         run_checks(root)
         transaction["state"] = "complete"
         write_journal(backup, transaction)
     except (OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
-        recover_transaction(root, transaction)
+        recover_transaction(root, transaction, backup_relative=backup_relative)
         raise
 
 

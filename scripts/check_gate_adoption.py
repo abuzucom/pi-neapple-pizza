@@ -28,12 +28,14 @@ from pathlib import Path
 SHARED_MANIFEST = "shared-files.json"
 TRANSACTION_HOOK = "enforce_gate_adoption.py"
 CLIENT_HOOKS = (
+    "hooks/native_client_gate.py",
     "hooks/block_infrastructure_access.py",
     "hooks/enforce_branch_name.py",
     "hooks/enforce_git_identity.py",
     f"hooks/{TRANSACTION_HOOK}",
 )
 REQUIRED_CHECKERS = (
+    "scripts/check_native_hook_launchers.py",
     "scripts/check_banned_agents.py",
     "scripts/check_branch_name.py",
     "scripts/check_commit_attribution.py",
@@ -240,6 +242,11 @@ def check_transaction_registrations(root: Path) -> list[str]:
                 f"{client} does not register {TRANSACTION_HOOK} under "
                 f"{event} with matcher {matcher!r}"
             )
+        if client != "claude" and not any(
+                str(group.get("matcher", "")) == matcher and any(
+                    f"native_client_gate.py --client {client}" in command
+                    for command in _group_commands(group)) for group in groups):
+            findings.append(f"{client} lacks complete native enforcement under {event}")
     return findings
 
 

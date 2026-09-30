@@ -7,8 +7,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python hooks/reinject_agents_policy.py --client codex",
-            "commandWindows": "python hooks/reinject_agents_policy.py --client codex",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client codex",
+            "commandWindows": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client codex",
             "timeout": 30,
             "additionalContextLimit": 0
           }
@@ -20,8 +20,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python hooks/reinject_agents_policy.py --client codex",
-            "commandWindows": "python hooks/reinject_agents_policy.py --client codex",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client codex",
+            "commandWindows": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client codex",
             "timeout": 30,
             "additionalContextLimit": 0
           }
@@ -34,15 +34,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python hooks/enforce_gate_adoption.py --client codex",
-            "commandWindows": "python hooks/enforce_gate_adoption.py --client codex",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_gate_adoption.py --client codex",
+            "commandWindows": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_gate_adoption.py --client codex",
             "timeout": 30
           },
           {
             "type": "command",
-            "command": "python hooks/enforce_branch_name.py --client codex",
-            "commandWindows": "python hooks/enforce_branch_name.py --client codex",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_branch_name.py --client codex",
+            "commandWindows": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_branch_name.py --client codex",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" native_client_gate.py --client codex",
+            "timeout": 30,
+            "commandWindows": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" native_client_gate.py --client codex"
           }
         ]
       }

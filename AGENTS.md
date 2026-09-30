@@ -333,9 +333,9 @@ A failed wrapper operation permits one semantically equivalent Git fallback
 after active-human confirmation. Use the documented fallback marker. See
 `docs/agent-policy/github.md` for implementation detail.
 
-The Claude shell gates enforce direct routing and mutation decisions. Other
-client hook APIs lack equivalent shell coverage. The instruction remains
-binding without that mechanical coverage.
+Claude shell gates enforce direct routing and mutation decisions.
+Native adapters inspect observable shell calls. Hosted tools lack hook coverage.
+The instruction binds beyond mechanical coverage.
 
 ### 17. Require consent before outward-facing acts on external repositories
 

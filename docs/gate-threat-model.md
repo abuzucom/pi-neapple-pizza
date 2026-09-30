@@ -6,6 +6,9 @@ boundary.
 
 ## Covered
 
+The original inventory describes Claude gate registrations.
+The native client section specifies additional adapter coverage.
+
 A model acts through supported tools on POSIX or Windows. Covered attempts
 include the following actions:
 
@@ -339,3 +342,32 @@ The baseline tool conservatively refuses baseline writes as root.
 Permission-mode tests use real files. Narrow patches at `os.open` and `os.stat`
 exercise error boundaries independently of account privileges. Windows and
 Linux therefore record the same consent-hook branches.
+
+## Native client coverage
+
+Claude retains its original registrations and native consent prompts.
+Codex, Gemini, and Antigravity register the native adapter before observable tools.
+The adapter invokes all three canonical shell classifiers for each shell call.
+The canonical identity checker inspects each effective Git write context.
+Named file tools invoke infrastructure protection and existing-test consent gates.
+Codex patch inspection covers every destination and move destination.
+Patch deletion requires active-human authorization and denies in the adapter.
+
+Codex PreToolUse does not support the Claude ask response.
+Gemini BeforeTool supports allow and deny decisions.
+Consent-required native calls deny until a supported authorization path exists.
+Repository instructions cannot supply that path or grant consent.
+No adapter treats model text or tool arguments as approval evidence.
+
+Codex hosted tools remain outside project PreToolUse coverage.
+Unknown tool schemas and client hook disablement remain coverage limits.
+Antigravity payload coverage applies to the registered workspace hook contract.
+Local subprocess tests do not establish installed-client trust or runtime integration.
+Repository writers can alter every local control.
+Independent harness boundaries remain necessary.
+
+Registered launchers use fixed Python code and separate script arguments.
+The launcher resolves the enclosing Git root from a finite ancestor list.
+Missing scripts and launch exceptions exit 2.
+Spaces and subdirectory startup receive regression coverage.
+Client behavior after executable startup failure requires independent enforcement.

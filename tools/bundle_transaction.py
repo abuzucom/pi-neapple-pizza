@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import stat
+import sys
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 
@@ -38,6 +39,8 @@ def exclusive_activation(root: Path):
 
 def checked_target(root: Path, relative: str) -> Path:
     """Reject ambiguous paths and symlink components before access."""
+    if sys.version_info < (3, 12):
+        raise ValueError("Python 3.12 or newer is required before bundle activation")
     if not isinstance(relative, str) or any(value in relative for value in ("\\", ":", "\0")):
         raise ValueError("invalid bundle path")
     if any(ord(character) < 32 or ord(character) > 126 for character in relative):
@@ -140,11 +143,12 @@ def replace_file(source: Path, target: Path, work: Path, expected: str, *, execu
     os.replace(work, target)
 
 
-def prepare_transaction(root: Path, sources: dict[str, Path], files: dict[str, str]) -> dict:
+def prepare_transaction(root: Path, sources: dict[str, Path], files: dict[str, str],
+                        *, backup_relative: str = ".gate-staging/activation-backup") -> dict:
     """Back up every target before writing a durable publication intent."""
     if sources.keys() != files.keys():
         raise ValueError("source inventory differs from target inventory")
-    backup = checked_target(root, ".gate-staging/activation-backup")
+    backup = checked_target(root, backup_relative)
     if (backup / "transaction.json").exists():
         raise ValueError("retained transaction requires verification or recovery")
     operations = []
@@ -165,11 +169,12 @@ def prepare_transaction(root: Path, sources: dict[str, Path], files: dict[str, s
     return transaction
 
 
-def publish_transaction(root: Path, transaction: dict) -> None:
+def publish_transaction(root: Path, transaction: dict,
+                        *, backup_relative: str = ".gate-staging/activation-backup") -> None:
     """Reject concurrent target changes before each ordered replacement."""
     if transaction["state"] != "prepared":
         raise ValueError("transaction is not prepared")
-    backup = checked_target(root, ".gate-staging/activation-backup")
+    backup = checked_target(root, backup_relative)
     for operation in transaction["operations"]:
         target = checked_target(root, operation["path"])
         current = file_digest(target) if target.exists() else None
@@ -180,9 +185,10 @@ def publish_transaction(root: Path, transaction: dict) -> None:
                      executable=operation["path"] in GIT_HOOK_TARGETS)
 
 
-def recover_transaction(root: Path, transaction: dict) -> None:
+def recover_transaction(root: Path, transaction: dict,
+                        *, backup_relative: str = ".gate-staging/activation-backup") -> None:
     """Restore approved originals without overwriting unrelated changes."""
-    backup = checked_target(root, ".gate-staging/activation-backup")
+    backup = checked_target(root, backup_relative)
     for operation in transaction["operations"]:
         target = checked_target(root, operation["path"])
         current = file_digest(target) if target.exists() else None
