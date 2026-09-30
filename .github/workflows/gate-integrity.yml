@@ -1,0 +1,47 @@
+name: Gate Integrity
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  protected-gate-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted-base
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr-head
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.x'
+      - name: Verify protected gate changes
+        working-directory: trusted-base
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          GIT_ALTERNATE_OBJECT_DIRECTORIES: ${{ github.workspace }}/pr-head/.git/objects
+        run: |
+          if [ -f scripts/check_gate_pr_integrity.py ]; then
+            python scripts/check_gate_pr_integrity.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --pr-number "$PR_NUMBER" --labels-json "$PR_LABELS_JSON"
+          else
+            python ../pr-head/scripts/check_gate_pr_integrity.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --pr-number "$PR_NUMBER" --labels-json "$PR_LABELS_JSON"
+          fi

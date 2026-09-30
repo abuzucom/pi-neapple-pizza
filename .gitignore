@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Retain adoption staging and validation artifacts outside commits.
+.gate-staging/
+.gate-adoption-*/
+.test-temp/
+__pycache__/
