@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.6] (2026-10-01)
+
+### Added
+
+- Import the coding-agent package snapshot.
+
 ## [0.2.5] (2026-10-01)
 
 ### Added
