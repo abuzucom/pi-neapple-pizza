@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.19] (2026-10-01)
+
+### Documentation
+
+- Record the immutable import receipt and deliberate upstream drift.
+
 ## [0.2.18] (2026-10-01)
 
 ### Fixed
