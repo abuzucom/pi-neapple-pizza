@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] (2026-10-01)
+
+### Added
+
+- Import the chord package snapshot.
+
 ## [0.2.2] (2026-10-01)
 
 ### Added
