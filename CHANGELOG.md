@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.18] (2026-10-01)
+
+### Fixed
+
+- Preserve clean-root isolation across traced and general test runners.
+- Avoid repository-owner reads for unrelated shell commands.
+
 ## [0.2.17] (2026-10-01)
 
 ### Added

@@ -57,6 +57,18 @@ PRIORITY_TEST_SHARDS = (
 )
 RESOURCE_HEAVY_TEST_SHARDS = frozenset(PRIORITY_TEST_SHARDS)
 EXCLUSIVE_TEST_SHARDS = RESOURCE_HEAVY_TEST_SHARDS
+EXCLUSIVE_TEST_MODULE_PREFIXES = (
+    "test_block_destructive_bash.py::",
+    "test_block_destructive_powershell.py::",
+    "test_cloudflare_pages_policy.py::",
+    "test_gate_parity.py::",
+)
+CLEAN_PROJECT_TEST_SHARDS = frozenset({
+    "test_block_destructive_bash.py::MassOperationTest",
+    "test_block_destructive_powershell.py::PowerShellPolicyTest",
+    "test_gate_parity.py::PowerShellPolicyParityTest",
+})
+CLEAN_PROJECT_ENVIRONMENT = "HOOK_COVERAGE_CLEAN_PROJECT_DIR"
 
 
 @dataclass(frozen=True)
@@ -235,6 +247,14 @@ def is_resource_heavy(label: str) -> bool:
     )
 
 
+def is_exclusive_shard(label: str) -> bool:
+    """Return whether tracing must isolate one subprocess-heavy shard."""
+    return (
+        label in EXCLUSIVE_TEST_SHARDS
+        or label.startswith(EXCLUSIVE_TEST_MODULE_PREFIXES)
+    )
+
+
 def terminate_process_tree(process: subprocess.Popen) -> None:
     """Stop a timed-out test process and all descendants."""
     if os.name == "nt":
@@ -265,12 +285,18 @@ def run_test_shard(
     """Run one test class with a timeout and return its captured result."""
     print("hook coverage: started %s" % label, file=sys.stderr, flush=True)
     started = time.monotonic()
+    shard_environment = dict(environment)
+    if label in CLEAN_PROJECT_TEST_SHARDS:
+        clean_project = shard_environment.get(CLEAN_PROJECT_ENVIRONMENT)
+        if not clean_project:
+            raise ValueError("clean coverage project directory is missing")
+        shard_environment["CLAUDE_PROJECT_DIR"] = clean_project
     creationflags = 0
     if os.name == "nt":
         creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
     process = subprocess.Popen(
         [sys.executable, "-m", "unittest", import_name],
-        cwd=root, env=environment, stdout=subprocess.PIPE,
+        cwd=root, env=shard_environment, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace",
         start_new_session=os.name != "nt", creationflags=creationflags)
     if process_registry is not None:
@@ -388,10 +414,10 @@ def run_test_shards(root: str, environment: dict,
         raise ValueError("coverage test discovery returned no shards")
     exclusive_shards = deque(
         shard for shard in test_shards
-        if shard[0] in EXCLUSIVE_TEST_SHARDS)
+        if is_exclusive_shard(shard[0]))
     ordinary_shards = deque(
         shard for shard in test_shards
-        if shard[0] not in EXCLUSIVE_TEST_SHARDS)
+        if not is_exclusive_shard(shard[0]))
     worker_count = min(workers, len(test_shards))
     print("hook coverage: starting %d test shards with %d workers"
           % (len(test_shards), worker_count), file=sys.stderr, flush=True)
@@ -439,11 +465,13 @@ def run_test_shards(root: str, environment: dict,
 def measure(root: str) -> dict:
     """Run the suite under the tracer and return the unreached counts."""
     out_dir = tempfile.mkdtemp(prefix="hook-coverage-")
+    clean_project_dir = tempfile.mkdtemp(prefix="hook-coverage-project-")
     try:
         environment = dict(os.environ)
         environment["PYTHONPATH"] = os.path.join(root, TRACER_DIR)
         environment["HOOK_COVERAGE_TARGET"] = os.path.join(root, TARGET)
         environment["HOOK_COVERAGE_OUT"] = out_dir
+        environment[CLEAN_PROJECT_ENVIRONMENT] = clean_project_dir
         problems = run_test_shards(root, environment)
         if problems:
             print("the suite failed under tracing, so coverage says nothing:",
@@ -454,6 +482,7 @@ def measure(root: str) -> dict:
         return unreached_counts(root, traced_lines(out_dir))
     finally:
         shutil.rmtree(out_dir, ignore_errors=True)
+        shutil.rmtree(clean_project_dir, ignore_errors=True)
 
 
 def compare(actual: dict, recorded: dict) -> list:

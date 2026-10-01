@@ -40,7 +40,7 @@ def hook_worker():
     return _HOOK_WORKER
 
 
-def run_hook(command: str, permission_mode: str = "default") -> tuple:
+def run_hook(command: str, permission_mode: str = "default", cwd: str = "") -> tuple:
     """Return the hook's (exit code, permission decision) for `command`."""
     payload = {
         "hook_event_name": "PreToolUse",
@@ -48,6 +48,8 @@ def run_hook(command: str, permission_mode: str = "default") -> tuple:
         "permission_mode": permission_mode,
         "tool_input": {"command": command},
     }
+    if cwd:
+        payload["cwd"] = cwd
     code, stdout, _stderr = hook_worker().invoke(payload)
     decision = ""
     if stdout.strip():
@@ -1471,8 +1473,15 @@ class CorpusTest(unittest.TestCase):
     landing in one repo and not the other fails here.
     """
 
+    CLEAN_ROOT_COMMANDS = frozenset({
+        "find . -name '*.tmp' -delete",
+        "grep -r 'dd if=' .",
+    })
+
     def test_every_corpus_row_reaches_its_verdict(self):
-        for command, expected, why in gate_corpus.BASH_CASES:
-            with self.subTest(command=command, why=why):
-                _, decision = run_hook(command)
-                self.assertEqual(decision or gate_corpus.ALLOW, expected)
+        with tempfile.TemporaryDirectory() as clean_root:
+            for command, expected, why in gate_corpus.BASH_CASES:
+                with self.subTest(command=command, why=why):
+                    cwd = clean_root if command in self.CLEAN_ROOT_COMMANDS else ""
+                    _, decision = run_hook(command, cwd=cwd)
+                    self.assertEqual(decision or gate_corpus.ALLOW, expected)

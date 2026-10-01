@@ -3155,16 +3155,16 @@ def forge_verdict(program: str, args: list, cwd: str = "") -> tuple:
     """Return (decision, reason) for a destructive forge command."""
     name = os.path.basename(program).lower().removesuffix(".exe")
     repository = cwd or os.getcwd()
-    owner = _origin_owner(repository)
     wrapped = trusted_gh_arguments(program, args, repository)
+    if not wrapped and name not in FORGE_PROGRAMS:
+        return "", ""
+    owner = _origin_owner(repository)
     if wrapped:
         decision, reason = github_cli_verdict(wrapped, repo_owner=owner)
         if decision:
             return decision, reason
         name = "gh"
         args = wrapped
-    if name not in FORGE_PROGRAMS:
-        return "", ""
     if name == "gh" and not wrapped:
         decision, reason = github_cli_verdict(args, repo_owner=owner)
         if decision:
