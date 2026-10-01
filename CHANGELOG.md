@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] (2026-10-01)
+
+### Added
+
+- Import the AI provider package snapshot.
+
 ## [0.2.1] (2026-10-01)
 
 ### Added
