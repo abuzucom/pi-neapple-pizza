@@ -1,0 +1,201 @@
+# Agents adoption approval inventory
+
+Source: `abuzucom/agents` at `24f62e1c415313f1bc4bbd8cff30328ae6d69ae5`.
+
+Copy the following source artifacts into one staged candidate. Activate the complete candidate in one operation. Retain source gate behavior and every required registration.
+
+- `.agents/hooks.json`
+- `.claude/settings.json`
+- `.claudeignore`
+- `.clinerules`
+- `.codex/config.toml`
+- `.codex/hooks.json`
+- `.copilot-instructions`
+- `.cursorrules`
+- `.editorconfig`
+- `.gemini/settings.json`
+- `.gitattributes`
+- `.github/ISSUE_TEMPLATE.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/copilot-instructions.md`
+- `.github/workflows/agents-compliance.yml`
+- `.github/workflows/agents-md-compliance.yml`
+- `.github/workflows/dependabot-changelog.yml`
+- `.github/workflows/gate-integrity.yml`
+- `.github/workflows/immutable-conflict-check.yml`
+- `.github/workflows/security-review-pr.yml`
+- `.github/workflows/sync-check.yml`
+- `.pre-commit-config.yaml`
+- `.windsurfrules`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `CONTRIBUTING.md.example`
+- `CONVENTIONS.md`
+- `GEMINI.md`
+- `Makefile`
+- `SECURITY.md.example`
+- `ci/build_pr_case.py`
+- `ci/call_model.py`
+- `ci/model_providers.json`
+- `ci/run_model_command.py`
+- `docs/agent-policy/adoption.md`
+- `docs/agent-policy/clients.md`
+- `docs/agent-policy/enforcement.md`
+- `docs/agent-policy/github.md`
+- `docs/agent-policy/security.md`
+- `docs/gate-threat-model.md`
+- `docs/pr-security-review.md`
+- `docs/project-orientation.md`
+- `hook-coverage-baseline.json`
+- `hooks/_bash_parser.py`
+- `hooks/_cmd_parser.py`
+- `hooks/_gate_core.py`
+- `hooks/_platform_policy.py`
+- `hooks/block_destructive_bash.py`
+- `hooks/block_destructive_cmd.py`
+- `hooks/block_destructive_powershell.py`
+- `hooks/block_infrastructure_access.py`
+- `hooks/claude-code-settings.example.json`
+- `hooks/enforce_branch_name.py`
+- `hooks/enforce_gate_adoption.py`
+- `hooks/enforce_git_identity.py`
+- `hooks/github-command-denylist.txt`
+- `hooks/reinject_agents_policy.py`
+- `hooks/require_consent.py`
+- `plan/HANDOFF.md.example`
+- `requirements-checkers.txt`
+- `scripts/banned_models.txt`
+- `scripts/branch_name_bans.txt`
+- `scripts/check_action_pins.py`
+- `scripts/check_agent_prose_gate.py`
+- `scripts/check_ascii.py`
+- `scripts/check_banned_agents.py`
+- `scripts/check_branch_name.py`
+- `scripts/check_changelog.py`
+- `scripts/check_commit_attribution.py`
+- `scripts/check_commit_message.py`
+- `scripts/check_compliance_tree.py`
+- `scripts/check_conflict_markers.py`
+- `scripts/check_dockerfile_root.py`
+- `scripts/check_english_only.py`
+- `scripts/check_external_pr_refs.py`
+- `scripts/check_gate_adoption.py`
+- `scripts/check_gate_pr_integrity.py`
+- `scripts/check_git_identity.py`
+- `scripts/check_hedging.py`
+- `scripts/check_hook_coverage.py`
+- `scripts/check_hook_launchers.py`
+- `scripts/check_persist_credentials.py`
+- `scripts/check_policy_size.py`
+- `scripts/check_pr_review_response.py`
+- `scripts/check_pull_request_message.py`
+- `scripts/check_secrets_heuristic.py`
+- `scripts/check_test_first.py`
+- `scripts/check_us_spelling.py`
+- `scripts/check_weak_hashing.py`
+- `scripts/complete_gate_adoption.py`
+- `scripts/create_dependabot_changelog_pr.py`
+- `scripts/handoff_policy.py`
+- `scripts/lint_style.py`
+- `scripts/prose_bans.txt`
+- `scripts/prose_policy.py`
+- `scripts/read_git_state.py`
+- `scripts/run_tests.py`
+- `scripts/sync.py`
+- `scripts/trusted_gh.py`
+- `scripts/trusted_git.py`
+- `shared-files.json`
+- `tests/fixtures/malformed-github-command-denylist.txt`
+- `tests/gate_corpus.py`
+- `tests/json_line_worker.py`
+- `tests/json_line_worker_child.py`
+- `tests/persistent_main_worker.py`
+- `tests/retrying_temp_directory.py`
+- `tests/test_advisory_workflow_wiring.py`
+- `tests/test_block_destructive_bash.py`
+- `tests/test_block_destructive_cmd.py`
+- `tests/test_block_destructive_powershell.py`
+- `tests/test_block_infrastructure_access.py`
+- `tests/test_branch_review_regressions.py`
+- `tests/test_branch_validation_boundaries.py`
+- `tests/test_branch_validation_bypasses.py`
+- `tests/test_branch_validation_contexts.py`
+- `tests/test_branch_validation_execution.py`
+- `tests/test_branch_validation_failures.py`
+- `tests/test_branch_write_destinations.py`
+- `tests/test_check_action_pins.py`
+- `tests/test_check_agent_prose_gate.py`
+- `tests/test_check_ascii.py`
+- `tests/test_check_changelog.py`
+- `tests/test_check_commit_attribution.py`
+- `tests/test_check_commit_message.py`
+- `tests/test_check_compliance_tree.py`
+- `tests/test_check_conflict_markers.py`
+- `tests/test_check_gate_adoption.py`
+- `tests/test_check_gate_pr_integrity.py`
+- `tests/test_check_hook_coverage.py`
+- `tests/test_check_hook_launchers.py`
+- `tests/test_check_pr_review_response.py`
+- `tests/test_check_test_first.py`
+- `tests/test_ci_branch_fixtures.py`
+- `tests/test_cloudflare_pages_path_security.py`
+- `tests/test_cloudflare_pages_policy.py`
+- `tests/test_compaction_directive.py`
+- `tests/test_complete_gate_adoption.py`
+- `tests/test_dependabot_branch_policy.py`
+- `tests/test_dependabot_changelog.py`
+- `tests/test_enforce_branch_name.py`
+- `tests/test_enforce_gate_adoption.py`
+- `tests/test_enforce_git_identity.py`
+- `tests/test_external_pr_refs.py`
+- `tests/test_external_repo_gate.py`
+- `tests/test_fresh_gate_entrypoints.py`
+- `tests/test_gate_adoption_transaction.py`
+- `tests/test_gate_parity.py`
+- `tests/test_github_command_denylist.py`
+- `tests/test_hook_coverage_runner.py`
+- `tests/test_immutable_auth_wiring.py`
+- `tests/test_immutable_compliance.py`
+- `tests/test_logic_consistency.py`
+- `tests/test_new_runtime_structure.py`
+- `tests/test_parallel_test_runner.py`
+- `tests/test_persistent_main_worker.py`
+- `tests/test_platform_policy.py`
+- `tests/test_platform_policy_coverage.py`
+- `tests/test_policy_distribution.py`
+- `tests/test_policy_size.py`
+- `tests/test_policy_size_wiring.py`
+- `tests/test_prose_metadata.py`
+- `tests/test_prose_policy.py`
+- `tests/test_reinject_agents_policy.py`
+- `tests/test_reinject_policy_supporting.py`
+- `tests/test_require_consent.py`
+- `tests/test_security_checkers.py`
+- `tests/test_security_review_wiring.py`
+- `tests/test_shard_priority.py`
+- `tests/test_sync_security.py`
+- `tests/test_sync_shared.py`
+- `tests/test_trusted_gh.py`
+- `tests/test_trusted_git_state.py`
+- `tests/test_worker_timeout_defaults.py`
+- `tools/hook-trace/sitecustomize.py`
+
+## Adopter-owned changes
+
+- Tailor README.md, CHANGELOG.md, DRIFT.md, Makefile, docs/project-orientation.md, CONTRIBUTING.md.example, SECURITY.md.example, and plan/HANDOFF.md.example.
+- Add CONTRIBUTING.md, SECURITY.md, docs/pi-architecture.md, and docs/agents-adoption.json.
+- Add a standard-library full-bundle transaction launcher and Git-hook launcher.
+- Add new adoption verification tests without changing imported tests.
+- Append staging and generated-artifact exclusions to .gitignore.
+- Install .git/hooks/pre-commit, .git/hooks/commit-msg, and .git/hooks/pre-push. Preserve sample hooks.
+
+## Dependencies
+
+- PyYAML 6.0.3 for canonical YAML checkers. Standard-library parsing cannot cover YAML workflows.
+- actions/checkout at 11d5960a326750d5838078e36cf38b85af677262.
+- actions/setup-python at a26af69be951a213d495a4c3e4e4022e16d87065.
+- actions/github-script at f28e40c7f34bde8b3046d885e986cb6290c5673b.
+- 0xmariowu/AgentLint at 6cf433c4092ee10a3162c2f4ddd68ff13b5d4aff.
+- abuzucom/foucault reusable review at 62851df1ef177593adbb9e06b223f5a6dce66fc0.
+
+Retaining the complete canonical workflow set preserves required wiring tests. Pin adoption to the exact source commit. Do not install additional dependencies.

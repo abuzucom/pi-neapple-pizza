@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "name": "agents-policy-session",
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client gemini",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "BeforeModel": [
+      {
+        "hooks": [
+          {
+            "name": "agents-policy-model",
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" reinject_agents_policy.py --client gemini",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "BeforeTool": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "name": "complete-gate-adoption",
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_gate_adoption.py --client gemini",
+            "timeout": 30000
+          },
+          {
+            "name": "strict-branch-preflight",
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" enforce_branch_name.py --client gemini",
+            "timeout": 30000
+          },
+          {
+            "type": "command",
+            "command": "python -c \"import pathlib,runpy,sys\ntry:\n roots=(pathlib.Path.cwd(),*pathlib.Path.cwd().parents)\n root=next((p for p in roots if (p/'.git').exists()),None)\n if root is None: sys.exit(2)\n target=root/'hooks'/sys.argv[1]\n if not target.is_file(): sys.exit(2)\n sys.argv=[str(target),*sys.argv[2:]]\n runpy.run_path(str(target),run_name='__main__')\nexcept Exception:\n sys.stderr.write('Hook launch failed; restore the complete verified gate set.\\n')\n sys.exit(2)\n\" native_client_gate.py --client gemini",
+            "timeout": 30000,
+            "name": "native-client-enforcement"
+          }
+        ]
+      }
+    ]
+  }
+}
