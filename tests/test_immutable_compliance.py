@@ -518,7 +518,7 @@ class ImmutableWorkflowTest(unittest.TestCase):
                     "trusted-base/scripts/" in command
                     or '"$TRUSTED_CHECKER"' in command
                     or command == (
-                        "python -m pip install --requirement "
+                        "python -m pip install --require-hashes --only-binary=:all: --requirement "
                         "trusted-base/requirements-checkers.txt"
                     ),
                     command,

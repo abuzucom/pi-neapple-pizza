@@ -1,5 +1,6 @@
 """Exercise exact native registrations with validated argument-array launch."""
 import json
+import hashlib
 import os
 import shlex
 import subprocess
@@ -87,8 +88,11 @@ def build_bootstrap_prefix(root: Path) -> str:
     source = path.read_bytes()
     if len(source) > MAX_BOOTSTRAP_BYTES:
         raise ValueError('readable bootstrap changed beyond its size bound')
+    manifest = root / 'scripts/runtime-integrity.json'
+    digest = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    source = ('APPROVED_DIGEST=' + repr(digest) + '\n').encode('ascii') + source
     expression = 'exec(bytes([' + ','.join(str(byte) for byte in source) + ']))'
-    return 'python -c f"' + "'';{" + expression + '}" '
+    return 'python -I -c f"' + "'';{" + expression + '}" '
 
 
 def read_native_commands(root: Path, relative: str, client: str, prefix: str) -> tuple[str, ...]:

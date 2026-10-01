@@ -112,7 +112,7 @@ The coupled client changes activate in one complete transaction.
   Hook names and client arguments remain separate arguments.
   No tool payload supplies executable bootstrap source.
   All configured clients receive real branch gate probes from a subdirectory.
-  Claude retains structured arguments without inline Python source.
+  Claude retains structured argument arrays.
   Native probes exercise POSIX and quote-retaining argument tokenization.
   Shell probes exercise PowerShell, CMD, and Git Bash on Windows.
   POSIX shell probes use `/bin/sh` on macOS and Linux.
@@ -123,3 +123,30 @@ The coupled client changes activate in one complete transaction.
 Local probes verify registered command execution and gate responses.
 Installed application trust and undocumented hook inheritance require separate verification.
 No change removes a gate, matcher, event, or test assertion.
+
+## Runtime authentication and client schemas
+
+- D017 binds registered bootstrap commands to an approved runtime inventory digest.
+  Runtime verification covers executable helpers and canonical policy inputs.
+  A nested repository cannot substitute a hook through a matching filename.
+  Python isolated mode prevents working-directory module substitution.
+- D018 extends the native adapter to Claude through an additional wildcard gate.
+  Existing Claude gates retain all events and matchers.
+  Unsupported observable tools deny across every adopted client.
+  Gemini directory arguments use `dir_path`.
+  Antigravity content inspection includes `CodeContent` and `ReplacementChunks`.
+  Conflicting path and command aliases deny before selection.
+- D019 coordinates runtime readers with the bundle publication lock.
+  Each reader verifies the approved generation before hook execution.
+  Interrupted publication cannot pass generation verification with mixed runtime bytes.
+- D020 reads review policy from the workflow-selected base revision.
+  Diff capture disables external diff commands and text conversion.
+  Capture enforces byte and time bounds before model input construction.
+- D021 pins published wheel hashes for PyYAML 6.0.3.
+  Dependency installation requires hashes and binary artifacts.
+
+Review groups separate runtime authentication, client schemas, and review supply inputs.
+The complete candidate remains one activation transaction across all clients.
+Native application loading and registration reload require separate verification.
+Hosted tools and shell-session continuation remain outside observable hook coverage.
+An external harness must enforce those channels.

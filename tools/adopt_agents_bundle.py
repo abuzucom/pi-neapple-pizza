@@ -48,16 +48,22 @@ def install_bundle(root: Path, candidate: Path, record: dict,
         files[relative] = hashlib.sha256(sources[relative].read_bytes()).hexdigest()
     backup = checked_target(root, backup_relative)
     order = sorted(files, key=lambda name: (name in REGISTRATIONS, name))
-    transaction = prepare_transaction(root, sources, {name: files[name] for name in order},
-                                      backup_relative=backup_relative)
+    with exclusive_activation(root):
+        transaction = prepare_transaction(root, sources, {name: files[name] for name in order},
+                                          backup_relative=backup_relative)
+        try:
+            publish_transaction(root, transaction, backup_relative=backup_relative)
+            verify_files(root, files)
+            transaction["state"] = "complete"
+            write_journal(backup, transaction)
+        except (OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
+            recover_transaction(root, transaction, backup_relative=backup_relative)
+            raise
     try:
-        publish_transaction(root, transaction, backup_relative=backup_relative)
-        verify_files(root, files)
         run_checks(root)
-        transaction["state"] = "complete"
-        write_journal(backup, transaction)
     except (OSError, ValueError, subprocess.SubprocessError, KeyboardInterrupt):
-        recover_transaction(root, transaction, backup_relative=backup_relative)
+        with exclusive_activation(root):
+            recover_transaction(root, transaction, backup_relative=backup_relative)
         raise
 
 
@@ -71,9 +77,8 @@ def main() -> int:
     candidate = Path(options.candidate).resolve()
     if not candidate.is_relative_to(root / ".gate-staging") or not candidate.is_dir():
         raise ValueError("candidate is outside the fixed staging root")
-    with exclusive_activation(root):
-        record = read_record(candidate / "docs" / "agents-adoption.json", options.manifest_sha256)
-        install_bundle(root, candidate, record)
+    record = read_record(candidate / "docs" / "agents-adoption.json", options.manifest_sha256)
+    install_bundle(root, candidate, record)
     print("Complete agents adoption activated; original files and transaction record remain retained.")
     return 0
 

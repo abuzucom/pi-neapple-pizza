@@ -1,5 +1,28 @@
 # Gate coverage and limits
 
+## Runtime authentication
+
+The configured bootstrap pins the approved runtime inventory digest.
+The bootstrap validates the verifier before executing repository code.
+The verifier checks every inventoried runtime file under the activation lock.
+Nested repositories cannot replace approved hooks with arbitrary files.
+Runtime readers share the lock across hook execution.
+Bundle publication requires the exclusive lock.
+Application processes must reload registrations after activation.
+Existing processes with old registrations do not acquire the new reader lock.
+
+Unsupported observable tool names deny by default.
+Gemini batch reads deny until an approved bounded adapter covers every target.
+Gemini shell and directory inspection validate `dir_path`.
+Antigravity write inspection validates `CodeContent` and `ReplacementChunks`.
+Conflicting aliases deny before argument selection.
+Question tools retain the client authorization path.
+
+Client hooks cannot observe every action channel.
+Codex hosted tools and shell-session continuation require external enforcement.
+Repository writers can alter registrations and the pinned inventory.
+Runtime authentication does not establish tamper resistance against repository writers.
+
 This document summarizes exercised hook behavior and known limits. Repository
 hooks provide advisory controls. The documented controls lack a security
 boundary.

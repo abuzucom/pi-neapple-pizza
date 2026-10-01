@@ -18,7 +18,6 @@
     "_gate_core.py::_git_clean_verdict": 1,
     "_gate_core.py::_github_api_verdict": 1,
     "_gate_core.py::_github_command_args": 4,
-    "_gate_core.py::_infrastructure_manifest_text": 1,
     "_gate_core.py::_is_system_root": 1,
     "_gate_core.py::_mentions_device": 3,
     "_gate_core.py::_option_value": 1,

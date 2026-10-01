@@ -8,12 +8,16 @@ import json
 import os
 import re
 import subprocess
+import threading
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 MAX_METADATA_BYTES = 1_000_000
+MAX_DIFF_BYTES = 1_000_000
+MAX_POLICY_BYTES = 131072
+CAPTURE_TIMEOUT_SECONDS = 30
 SHA_PATTERN = re.compile(r"[0-9a-f]{40}")
 REPOSITORY_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
@@ -78,10 +82,56 @@ def _digest(text: str) -> str:
     return hashlib.sha256(text.replace("\r\n", "\n").encode()).hexdigest()
 
 
+def capture_bounded(arguments: list[str], limit: int, timeout: float) -> str:
+    """Bound child output in memory and terminate capture at the deadline."""
+    if not isinstance(limit, int) or limit <= 0 or timeout <= 0:
+        raise ValueError("capture bounds must be positive")
+    with subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as process:
+        expired = threading.Event()
+
+        def expire() -> None:
+            """Terminate the supervised child without leaving a timer running."""
+            expired.set()
+            process.kill()
+
+        timer = threading.Timer(timeout, expire)
+        timer.start()
+        try:
+            raw = process.stdout.read(limit + 1)
+            if len(raw) > limit:
+                process.kill()
+                raise RuntimeError("review input exceeds the approved capture bound")
+            status = process.wait()
+            if expired.is_set() or status:
+                raise RuntimeError("review input capture failed or exceeded its deadline")
+            return raw.decode("utf-8", errors="strict").replace("\r\n", "\n").replace("\r", "\n")
+        finally:
+            timer.cancel()
+            timer.join()
+            if process.poll() is None:
+                process.kill()
+            process.wait()
+
+
+def read_base_policy(base_sha: str) -> str:
+    """Read policy only from the workflow-selected immutable base revision."""
+    if not SHA_PATTERN.fullmatch(base_sha):
+        raise RuntimeError("trusted policy revision is invalid")
+    policy = capture_bounded(
+        ["git", "--no-pager", "show", "--no-ext-diff", "--no-textconv", base_sha + ":AGENTS.md"],
+        MAX_POLICY_BYTES, CAPTURE_TIMEOUT_SECONDS)
+    if not policy.strip():
+        raise RuntimeError("trusted base policy is absent")
+    return policy
+
+
 def build_case() -> dict[str, object]:
     """Build one PR envelope from trusted lifecycle data and target evidence."""
-    with open(os.environ["EVENT_PATH"], encoding="utf-8") as event_file:
-        event = json.load(event_file)
+    with open(os.environ["EVENT_PATH"], "rb") as event_file:
+        raw_event = event_file.read(MAX_METADATA_BYTES + 1)
+    if len(raw_event) > MAX_METADATA_BYTES:
+        raise RuntimeError("event metadata exceeds the approved bound")
+    event = json.loads(raw_event)
     if not isinstance(event, dict):
         raise RuntimeError("event payload is not an object")
     pull_request = _get_pull_request(event)
@@ -93,20 +143,19 @@ def build_case() -> dict[str, object]:
     body = pull_request.get("body")
     if not isinstance(title, str) or not isinstance(body, (str, type(None))):
         raise RuntimeError("pull request title or body is invalid")
-    diff = subprocess.run(
-        ["git", "diff", base_sha, head_sha],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
+    diff = capture_bounded(
+        ["git", "--no-pager", "diff", "--no-ext-diff", "--no-textconv", base_sha, head_sha, "--"],
+        MAX_DIFF_BYTES, CAPTURE_TIMEOUT_SECONDS)
+    policy = read_base_policy(base_sha)
     target = "Title: " + title + "\n\n" + (body or "")
     target += "\n\n---\n" + diff
     return {
         "mode": "PR",
         "TRUSTED_HOOK_CONTEXT": {
             "read_only": True,
-            "sha256": _digest(""),
-            "text": "",
+            "sha256": _digest(policy),
+            "text": policy,
+            "source_revision": base_sha,
         },
         "REVIEW_TARGET": {"sha256": _digest(target), "text": target},
     }

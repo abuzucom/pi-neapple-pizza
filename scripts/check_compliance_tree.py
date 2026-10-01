@@ -26,7 +26,7 @@ CODE_SUFFIXES = {
     ".tsx",
 }
 TRUSTED_REQUIREMENTS_COMMAND = (
-    "python -m pip install --requirement "
+    "python -m pip install --require-hashes --only-binary=:all: --requirement "
     "trusted-base/requirements-checkers.txt"
 )
 TRUSTED_SCAN_COMMAND = (

@@ -23,12 +23,16 @@ FILE_TOOLS = {"Read": "Read", "read_file": "Read", "view_file": "Read",
 SHELL_GATES = (("block_destructive_bash.py", "Bash"),
                ("block_destructive_powershell.py", "PowerShell"),
                ("block_destructive_cmd.py", "Cmd"))
+CLAUDE_CANONICAL_TOOLS = frozenset({"Bash", "PowerShell", "Cmd", "CMD", "CommandPrompt",
+                                  "Read", "Write", "Edit", "MultiEdit", "NotebookEdit", "Glob", "Grep"})
+QUESTION_TOOLS = {"claude": "AskUserQuestion", "codex": "request_user_input",
+                  "gemini": "ask_user", "antigravity": "notify_user"}
 
 
 def deny_call(client: str, reason: str) -> int:
     """Emit only supported denial responses without a consent fallthrough."""
     message = "Native policy gate: " + reason
-    if client == "codex":
+    if client in ("codex", "claude"):
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
               "permissionDecision": "deny", "permissionDecisionReason": message}}))
         print(message, file=sys.stderr)
@@ -100,11 +104,14 @@ def run_gate(filename: str, tool: str, arguments: dict, cwd: str) -> None:
 
 def inspect_shell(arguments: dict, cwd: str) -> None:
     """Inspect every shell family before allowing a native shell operation."""
-    command = arguments.get("command", arguments.get("CommandLine"))
-    if not isinstance(command, str) or not command.strip():
+    commands = [arguments[key] for key in ("command", "CommandLine", "cmd") if key in arguments]
+    if not commands or any(not isinstance(value, str) or not value.strip() for value in commands):
         raise ValueError("shell command cannot be inspected")
-    effective = arguments.get("workdir", arguments.get("Cwd", cwd))
-    if not isinstance(effective, str) or not Path(effective).is_dir():
+    command = commands[0]
+    if any(value != command for value in commands):
+        raise ValueError("conflicting shell command fields")
+    effective = resolve_argument_path(arguments, ("dir_path", "workdir", "Cwd"), cwd, default=cwd)
+    if not Path(effective).is_dir():
         raise ValueError("shell working directory cannot be inspected")
     for filename, tool in SHELL_GATES:
         run_gate(filename, tool, {"command": command}, effective)
@@ -125,21 +132,54 @@ def inspect_identity(command: str, cwd: str) -> None:
 def inspect_file(tool: str, arguments: dict, cwd: str) -> None:
     """Normalize named paths while preserving the native write content."""
     normalized = dict(arguments)
-    path = next((arguments[key] for key in ("file_path", "TargetFile", "AbsolutePath",
-                 "DirectoryPath", "SearchDirectory", "path", "notebook_path") if key in arguments), None)
-    if path is None and tool in ("Glob", "Grep"):
-        path = cwd
-    if not isinstance(path, str) or not path:
-        raise ValueError("file destination cannot be inspected")
+    path = resolve_argument_path(arguments, ("file_path", "TargetFile", "AbsolutePath",
+                 "DirectoryPath", "SearchDirectory", "dir_path", "path", "notebook_path"),
+                 cwd, default=cwd if tool in ("Glob", "Grep") else None)
     normalized["file_path"] = path
     normalized["path"] = path
     if "Content" in arguments:
         normalized["content"] = arguments["Content"]
+    if "CodeContent" in arguments:
+        if not isinstance(arguments["CodeContent"], str):
+            raise ValueError("write content cannot be inspected")
+        normalized["content"] = arguments["CodeContent"]
+    contents = [arguments[key] for key in ("content", "Content", "CodeContent") if key in arguments]
+    if any(not isinstance(value, str) for value in contents):
+        raise ValueError("write content cannot be inspected")
+    if contents and any(value != contents[0] for value in contents):
+        raise ValueError("conflicting write content fields")
     if "ReplacementContent" in arguments:
         normalized["new_string"] = arguments["ReplacementContent"]
+    if "ReplacementChunks" in arguments:
+        normalized["edits"] = normalize_replacement_chunks(arguments["ReplacementChunks"])
     run_gate("block_infrastructure_access.py", tool, normalized, cwd)
     if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
         run_gate("require_consent.py", tool, normalized, cwd)
+
+
+def resolve_argument_path(arguments: dict, keys: tuple, cwd: str, *, default: str | None) -> str:
+    """Reject ambiguous path aliases before choosing the effective target."""
+    values = [arguments[key] for key in keys if key in arguments]
+    if not values:
+        values = [default]
+    if any(not isinstance(value, str) or not value for value in values):
+        raise ValueError("operation path cannot be inspected")
+    paths = [str((Path(cwd) / value).resolve()) for value in values]
+    if any(value != paths[0] for value in paths):
+        raise ValueError("conflicting operation path fields")
+    return paths[0]
+
+
+def normalize_replacement_chunks(chunks: object) -> list[dict]:
+    """Validate every native replacement before canonical content inspection."""
+    if not isinstance(chunks, list) or not chunks:
+        raise ValueError("replacement chunks cannot be inspected")
+    edits = []
+    for chunk in chunks:
+        if not isinstance(chunk, dict) or not isinstance(chunk.get("ReplacementContent"), str):
+            raise ValueError("replacement chunk content cannot be inspected")
+        edits.append({"new_string": chunk["ReplacementContent"]})
+    return edits
 
 
 def inspect_patch(arguments: dict, cwd: str) -> None:
@@ -167,16 +207,22 @@ def inspect_patch(arguments: dict, cwd: str) -> None:
 def main() -> int:
     """Deny malformed requests and preserve each canonical policy decision."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--client", required=True, choices=("codex", "gemini", "antigravity"))
+    parser.add_argument("--client", required=True, choices=("claude", "codex", "gemini", "antigravity"))
     options = parser.parse_args()
     try:
         name, arguments, cwd = read_call(options.client)
+        if options.client == "claude" and name in CLAUDE_CANONICAL_TOOLS:
+            return 0
+        if name == QUESTION_TOOLS[options.client]:
+            return 0
         if name in SHELL_TOOLS:
             inspect_shell(arguments, cwd)
         elif name == "apply_patch":
             inspect_patch(arguments, cwd)
         elif name in FILE_TOOLS:
             inspect_file(FILE_TOOLS[name], arguments, cwd)
+        else:
+            raise ValueError("tool has no approved inspection adapter")
     except (ValueError, OSError, subprocess.SubprocessError, UnicodeError, ImportError) as error:
         reason = " ".join(str(error).splitlines())
         reason = "".join(character for character in reason if 32 <= ord(character) < 127)

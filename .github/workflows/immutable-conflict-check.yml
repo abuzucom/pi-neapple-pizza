@@ -52,6 +52,7 @@ jobs:
       - name: Install trusted checker dependencies
         run: >-
           python -m pip install
+          --require-hashes --only-binary=:all:
           --requirement trusted-base/requirements-checkers.txt
       - name: Scan immutable pull request objects with the trusted checker
         env:

@@ -35,6 +35,9 @@ CLIENT_HOOKS = (
     f"hooks/{TRANSACTION_HOOK}",
 )
 REQUIRED_CHECKERS = (
+    "scripts/runtime-integrity.json",
+    "scripts/verified_hook_runtime.py",
+    "scripts/seal_hook_runtime.py",
     "scripts/hook_launcher_bootstrap.py",
     "scripts/check_native_hook_launchers.py",
     "scripts/check_banned_agents.py",
@@ -243,7 +246,7 @@ def check_transaction_registrations(root: Path) -> list[str]:
                 f"{client} does not register {TRANSACTION_HOOK} under "
                 f"{event} with matcher {matcher!r}"
             )
-        if client != "claude" and not any(
+        if not any(
                 str(group.get("matcher", "")) == matcher and any(
                     f"native_client_gate.py --client {client}" in command
                     for command in _group_commands(group)) for group in groups):

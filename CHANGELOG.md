@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3] (2026-09-30)
+
+### Security
+
+- Authenticate the complete hook runtime before repository code execution.
+- Coordinate runtime readers with bundle activation locks.
+- Deny unsupported observable tools across all four adopted clients.
+- Validate native directory, content, and replacement fields.
+- Reject conflicting command and destination aliases.
+- Bound review capture and load trusted policy from the base revision.
+- Require published wheel hashes for the existing checker dependency.
+
 ## [0.1.2] (2026-09-30)
 
 ### Fixed

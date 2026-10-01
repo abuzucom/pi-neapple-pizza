@@ -204,43 +204,43 @@
     "line_ending_conversion": "CRLF to LF only"
   },
   "files": {
-    ".agents/hooks.json": "7db84d0d13a9dd586831db1ea46229e5915b151543b9b95ce53cc78a8a000b73",
-    ".claude/settings.json": "42f9adb3f4e9e8f567cce1f005752e818f06e2f224cd3e7415f890c4a21789f8",
+    ".agents/hooks.json": "69a30817329759989a125ccd60ab59033bc1022e40ef37ad16acfd5a1ac378b0",
+    ".claude/settings.json": "629d28e9cfb7d36f25b86c85b7fa3f556957f37d7718af3b96d6d59e885601b9",
     ".claudeignore": "30586839895ef8414a66bcecc80dd9b78350bb87daa061485fa66761d550930a",
     ".clinerules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".codex/config.toml": "a9b8ff9101614775fa873884108b3d9c9b662b22df8ca705c883ed4e1b3c343a",
-    ".codex/hooks.json": "10f4c51abcd10976ab357d55a15190901adedb2a103c06df7ef0fa2107c84115",
+    ".codex/hooks.json": "cb72e95ca2bd5cfb04d9694b7079609e87f54b267a2c7cb93f605af49c341031",
     ".copilot-instructions": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".cursorrules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".editorconfig": "b54e6b2dc7b0f47365519282b24b6f54912d473fcc7fc5b78ecaae96af13c23c",
-    ".gemini/settings.json": "ce0cdef569e15ded4852a157d953ca02f4d8ddee9c94d2558eae9075d39b9b66",
+    ".gemini/settings.json": "750f86222e0fc6a14ea3e596a481f31caa286cd9b171a47935e239a40d24dd5e",
     ".gitattributes": "d54c8c98c5dbc63ee5d1e0fbf61d6afaa395456024dd961a98deb724527c95df",
     ".github/ISSUE_TEMPLATE.md": "3f217bca16d552b383ba2c34ac228e563e9187c4f95a23e9c919fd998d2a2c8e",
     ".github/PULL_REQUEST_TEMPLATE.md": "5290b36ce530a7a04dd42c88892c09a36237d1e2a1dddc75d9d72214f9580c1a",
     ".github/copilot-instructions.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
-    ".github/workflows/agents-compliance.yml": "a9e18fe25c777830a0b78855d39916c790b91e1b6eda4d40e8c1ebf5af30f8c8",
+    ".github/workflows/agents-compliance.yml": "f9ace91982e6baafb3519436aedd7fa26006a0803fb28609dc79765ce6403f96",
     ".github/workflows/agents-md-compliance.yml": "ec97fbfe72de806e7b03fa3b2ecbc3b1f0def5988e36722b2f06a17d79e2ff29",
     ".github/workflows/dependabot-changelog.yml": "78ff1867360887c764265e26360ba16c78bccc0156827943a8e4e963b701c4a2",
     ".github/workflows/gate-integrity.yml": "09c42d6bf6b104bb9e189ee81e76728dde878dbdf6691dda8e21c05d197874d4",
-    ".github/workflows/immutable-conflict-check.yml": "e08c29c942b2868fb1473e9e76566b81d1779c3acbb275bd9ee1fbc065d3e9d4",
+    ".github/workflows/immutable-conflict-check.yml": "085a81fa563a05a76bca2b5bac74d4077100e9513d09a57ec843f414528ca549",
     ".github/workflows/security-review-pr.yml": "c95b9797587a7e7f6498fe26522c2de1b795a8f5843fb1059d492da5380b8a94",
-    ".github/workflows/sync-check.yml": "43478a6a0968a6c1231e2e9a7f8468d3f91fec57c6a9ea0fad9c2699f104e925",
+    ".github/workflows/sync-check.yml": "c5464edf43006cf62f75bd103925b11cefac96412f54fb720036b45e9088db8c",
     ".gitignore": "7ab9e072302d3eb27d0c437506233b570f3f5448ac5747ada4ff04359d7c384e",
     ".pre-commit-config.yaml": "50a243a92c34cbfb8e2192175569f7b9f727b09af8aea39f056731e39417a7a7",
     ".windsurfrules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "AGENTS.md": "03de7543f6fbbea96d789b36667269dbc0722a9d055c0c79f0f50e23316889b2",
-    "CHANGELOG.md": "745c2740f12d0371e45b4617cf4330145e7c497b57de63de4d061dc49440ff17",
+    "CHANGELOG.md": "2a9ec37e2c7e9887b8a3612fe96ad6f3e85e7e5af5660616a4b8b188b30e57b5",
     "CLAUDE.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "CONTRIBUTING.md": "3b140b82a98a1f9305b51989cc6803ff398b74125e3e29f96d538f482cb1326f",
     "CONTRIBUTING.md.example": "3b140b82a98a1f9305b51989cc6803ff398b74125e3e29f96d538f482cb1326f",
     "CONVENTIONS.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
-    "DRIFT.md": "7fa188479e8808f05866f67ede01917db2d767affacb62ccc1554a4ca89b9d52",
+    "DRIFT.md": "b1af38f4abe8670b3b6c9ad5eebefa8d261d61bfcb638c51f3308656c07c59ba",
     "GEMINI.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "Makefile": "d063f7fc9e3f3978d3c1b8189992fb355c1b698a078786bf9dbd7337318c5047",
-    "README.md": "0f9d281b6466aee3a1494dd4c6e58db0208e55804fe6cc2c9cee97cabc578a44",
+    "README.md": "960b3d23335c69f86b31fb060ab1112d697b2d173e450f673ab697917734f5cb",
     "SECURITY.md": "77fc608d5fe882f62d1e302c612b5155de1eca430fa54bef96836355964977d4",
     "SECURITY.md.example": "77fc608d5fe882f62d1e302c612b5155de1eca430fa54bef96836355964977d4",
-    "ci/build_pr_case.py": "5af5b24708f7d3c5ce0c07b84e6627d3a6b5f7151a57f2b07569553e941e7223",
+    "ci/build_pr_case.py": "2fdc68b771abbcfc1ec29661968338a2b7938389320a7179ec00514914f8306c",
     "ci/call_model.py": "b16208e2110477929e103ea98847ea4a0fb19b8508cfa1ca48d1050cd0576a1b",
     "ci/model_providers.json": "9544f1a5cd6602cb1114b482b200fd286cdfcdb17a918034499534e6e124db06",
     "ci/run_model_command.py": "494cb0bfd49b6d490c87f009a0b252cb988c2fa74c1a6efe11435e72173899e5",
@@ -249,11 +249,11 @@
     "docs/agent-policy/enforcement.md": "e93ae93f92352f42c87e773e746df218ee0e8852875bb4b4ed83d1272d7dc3d8",
     "docs/agent-policy/github.md": "7033e8803bf312c0b2d3e10dedecbb38836c4e514c162473f00b8095106a891a",
     "docs/agent-policy/security.md": "f308819e9dca4a7fd29de3e11532c010c6130096488237b77c4f5200dda90f8a",
-    "docs/gate-threat-model.md": "82c012268f7f2f1fdc7c8ded7ea744d61fb2a7a5de625a0a683e99e673c7ad36",
+    "docs/gate-threat-model.md": "c2f6c2b4bd4dcab77fc49fe2309cde05be71adbdbed92821d0f910edc4592e7a",
     "docs/pi-architecture.md": "3b55e206424bf3ef627b1da1c280d9bb94642b2e93dc402e7fa09505935abe8a",
     "docs/pr-security-review.md": "15edbe3c0a43e96deb31d64b2c3d08dea9718bdbc16986b12a06cb93ad83fc93",
     "docs/project-orientation.md": "7505a1a35fef62dcaafbee057911d503c0848271d1698039f3550cdfd5335aac",
-    "hook-coverage-baseline.json": "9fa190fcf99a2370ede8ed4f7bdb9db4c63e26a20998852876ca037240ea1086",
+    "hook-coverage-baseline.json": "2c139a8c3c88bb5dbef6029334a3e19f030cc8a69c19d84e035b08fade46fcc1",
     "hooks/_bash_parser.py": "082d48b1565f28f13a954efd123471266d4a3bfaecbbc58fd078d304e339961d",
     "hooks/_cmd_parser.py": "4212670bc4166a5f89be120ceb6bafbc854d16743ff900f4b596b7b79fa5981b",
     "hooks/_gate_core.py": "6be59dd094c39324849cbb329d838d831dfb166750754fde18f7b52ca8e99044",
@@ -262,16 +262,16 @@
     "hooks/block_destructive_cmd.py": "7740e565354e175db1031690a9fb021db01c4ac8205f1c83cfa045e99e2a27d5",
     "hooks/block_destructive_powershell.py": "07bcf8d15e7bd1b65cc6f948a5c2df28c60e5c4d90d40569a23d916dc7d6d549",
     "hooks/block_infrastructure_access.py": "ba7cd32ec56084709e71b0dd79eef466454acefd4189c404df03bd8483e51eb5",
-    "hooks/claude-code-settings.example.json": "42f9adb3f4e9e8f567cce1f005752e818f06e2f224cd3e7415f890c4a21789f8",
+    "hooks/claude-code-settings.example.json": "629d28e9cfb7d36f25b86c85b7fa3f556957f37d7718af3b96d6d59e885601b9",
     "hooks/enforce_branch_name.py": "7396cc5e2fe2cdf4c0d9ecda4fe7512f0273ef6a29d129bb55b6268ddfb3ae64",
     "hooks/enforce_gate_adoption.py": "85fbd00d2a45e1c2b593523b123638a7365abacb54c6584ac282dd2ae1a9dbec",
     "hooks/enforce_git_identity.py": "9439985a3c6a81dd48ffb629659294438894d38e7357ccf9bbd12e5c37cffe6e",
     "hooks/github-command-denylist.txt": "76f3cb2f01e9771c772e35d7d10545afc47bde44b77c1c274f8c36af5612a6b6",
-    "hooks/native_client_gate.py": "278a5d9d83e7fcb01a2bd949e59d02b84ade7d0c6b4da0594ade12ceb38a0ca0",
+    "hooks/native_client_gate.py": "68f6bd1c0dc34a18b5fc4371d578851f4f332143247599505bede2d90909e641",
     "hooks/reinject_agents_policy.py": "ff694eddfab42ad065dd2fe8f7daf2872fbc4e751aa654ed720f40aff9e17572",
     "hooks/require_consent.py": "2a831d57e883717f5c7eb04fc86f4abbd318a2f6d9f2a9c90d600bf8ea07818d",
     "plan/HANDOFF.md.example": "958b8586dbdffa82c45e04f49a07802fcac28772976c0de5631da51e1153fc32",
-    "requirements-checkers.txt": "0969da99a0bc2a1b71ed50584560f4588a37567ac63af3ddbaf3c4617ca5621a",
+    "requirements-checkers.txt": "21af2cd953d7e1bd0a617b97f98a955eb0dec4d23f211c6776e6a7951ce46973",
     "scripts/banned_models.txt": "109b08378ccd92f32ed6def13b32a49dbc2537d0462cc8e87e8bac070dfc7b73",
     "scripts/branch_name_bans.txt": "eb08e4105979f2358f173276e7cdc69d3bf4d7256823a4330cb26ce0c1c75206",
     "scripts/check_action_pins.py": "0df7773d6713524deaeb098d1bcf00b5925a447e0235751f1683ce7247d40d77",
@@ -282,18 +282,18 @@
     "scripts/check_changelog.py": "c58fcd63be172384687676433b6f87f3f7a61270c7e5f1a5d914e2f4623e6e1c",
     "scripts/check_commit_attribution.py": "fed6ab322fc0b6f3113fadc8b221a5fbc2688da4c9949dbc083789460292394a",
     "scripts/check_commit_message.py": "1479f90ed97f9d072da51c6e23b5f9ef1ed47e27554de81c3afcfcf0d257a81e",
-    "scripts/check_compliance_tree.py": "36b2f3d8ad544c16e1171b2bc49883ab4f789380d7b6a7d8e33c6a0c490113d0",
+    "scripts/check_compliance_tree.py": "0c7702db0affbb285520309d2a0347ac2c6ab674ee7fc14f51c58482c4cfa507",
     "scripts/check_conflict_markers.py": "87d0395c1048e5f5779f6be2713b4be7497252b44ec42cb2cc3945d87dd65cb8",
     "scripts/check_dockerfile_root.py": "0b0b3be2e19713f8016c5a6e84d6b4ca74e9e95fe44e1908f5530253f5fbdfc9",
     "scripts/check_english_only.py": "0358dc316c99a402b87c5a0c6c6932f02c895625f446401152551873a3114c08",
     "scripts/check_external_pr_refs.py": "3a250c40883c2a2836413c24727df4411953880700b051394c982607edee7ce3",
-    "scripts/check_gate_adoption.py": "4cecac755f80f9b24b335cf18563b8f4451e04e2c43c3c1dc8c1d39d697f72c8",
+    "scripts/check_gate_adoption.py": "85e461af75a0094bed72251a3c36a0b307326fa9eb05da665e688c9c00c01a81",
     "scripts/check_gate_pr_integrity.py": "75b1e0a4776bbf75c91682d803c817604b84a2decdc769679ae103a3a4d39b30",
     "scripts/check_git_identity.py": "782a174a6bb9c5e1c3480db8087631112cb73df2ad977a0ca2d73b6889419d5d",
     "scripts/check_hedging.py": "fb2d368e2fbf785419836c5e1ee23d980b0cbba9a68054a5a800c6025aba383d",
-    "scripts/check_hook_coverage.py": "6f678724d5c9c3222df249e6ad29fd46d3ac4becf2e0dcfef6a6af2886fe7b01",
+    "scripts/check_hook_coverage.py": "0983ef93bc41d48bf526bdec9c3193b43b026d4d571f40bcd877960bac3da2dd",
     "scripts/check_hook_launchers.py": "5e59a28b3a23f10d1744233a88a24eac5e3c488565ff485f14fdc53ce0b6809b",
-    "scripts/check_native_hook_launchers.py": "0f07d68f9d1dc51cfe55534b54b9df7b084bda909854083c4f5c886b9c7689b0",
+    "scripts/check_native_hook_launchers.py": "c4574169a8032a9f7f2db210415ffc39ef85bd4e98d780c86a8a17b13a9b7662",
     "scripts/check_persist_credentials.py": "5425920259fcbc4173faffc39ee08bc4197c261a32b5093df4c296539c19eade",
     "scripts/check_policy_size.py": "bd923b8281a6a8793cb7b0597edeb9c155cc4929c63bac88cf041a1994f8e8fd",
     "scripts/check_pr_review_response.py": "d96f3f356821e3d123d0cfbf2bff322fee086e6a45f3665c6ca85f803c386a27",
@@ -302,19 +302,22 @@
     "scripts/check_test_first.py": "66c167f264fcd76f85d6ac3c449dda00047680e0a55dfc13d0ecdc2dae0f0e91",
     "scripts/check_us_spelling.py": "6c5fd1f98c76bb6614cd4bdcfa933e9d7fc246aebe418d87261c29d1c3ae27e9",
     "scripts/check_weak_hashing.py": "147ceb02c315ed946331967ebe1d3983189a250396fd272f987d1588a3d55736",
-    "scripts/complete_gate_adoption.py": "0d411030287e7ac56049c0137ae0dc7a43d404fdfcfcf97e5e91c4e88643ff81",
+    "scripts/complete_gate_adoption.py": "d18aa67ed1ffc0fabef1a33cd8c4e27e24447cb1563c9f7b9e1b5a366bed46b4",
     "scripts/create_dependabot_changelog_pr.py": "9717ae74b95dfbe223643dd708ac3de2afd2328f7e0793ccf591afe7f3e9ac0f",
     "scripts/handoff_policy.py": "8506e7175c2f1729e35644eedf7c3c97b9116518c019b8ae7bc802d8e5884d21",
-    "scripts/hook_launcher_bootstrap.py": "e01f2180b79ac35c0b08474e2712238dde5e7c0fd8c7b8eeedde841f40668cf3",
+    "scripts/hook_launcher_bootstrap.py": "35f84d6a21c6c90a86a928c8294a0fb43aff9e966ec06513669f778e51a460c4",
     "scripts/lint_style.py": "53f46e2a016575e853910abb3a0a97a46939b503060255197511c18b6a572514",
     "scripts/prose_bans.txt": "66b5dbca3a3e8238ff7af969a4ac458802aa6e431be7d533df4c926fa16d553d",
     "scripts/prose_policy.py": "e525ef1491c2e3b6b9ac5c1509eb8b291bc2dd41bcc1804b0155161ba345f256",
     "scripts/read_git_state.py": "40d1c2eb96eb12fae50d0d010df7c4c1ac0361a9cd69e1c8ff9225109d85cde1",
     "scripts/run_tests.py": "5ef2a419622dd69e20a8c252019ae11ed8de5f3d6d0ab5b749049f8f90e17c75",
+    "scripts/runtime-integrity.json": "3805318343000e75a31a7c350d55dd27bf26f0de8431c4add14b35882dc3a18c",
+    "scripts/seal_hook_runtime.py": "3b23109228ce307fd3aedcf74fc13dc04d4dc91417aabd85f37942f5437eaa3a",
     "scripts/sync.py": "5bb502670e0999e022659c20cb44ee5778eec98ca737cfd52281cb283690e97f",
     "scripts/trusted_gh.py": "f92d1677890424f31397636e2cad00dddd5e0b299e4e68be2ff12cb8ea49b5c4",
     "scripts/trusted_git.py": "38dc1d0fbbc539d452a395f659a66b77853c58054ea4ac80c2360cd6c567ebe0",
-    "shared-files.json": "99f0eac62430629dd61457b1009c1f8d34e87e7a29ef5f8510f45678961108e2",
+    "scripts/verified_hook_runtime.py": "59d97498709cd6242185e1b62df567f5c16482a32e9b440eb04caae153b27c0e",
+    "shared-files.json": "8f69c0cf963ab66d84288d2c2758f3ada85639555f10d60b334086d89eb015ac",
     "tests/fixtures/malformed-github-command-denylist.txt": "2cf4ad18d7cec1035cf690331fafa50e48ca58aba058f6362a65cbd7fb426758",
     "tests/gate_corpus.py": "cdd1a64831a8001fabc592df45f9c80ef2705c963cae31e20e75eb67dc44000a",
     "tests/json_line_worker.py": "57cbf9ed4c57506201e9c9e4ae57d6b8a330d5ede2f8fb76f0c4f72dae55fc0b",
@@ -357,7 +360,7 @@
     "tests/test_complete_gate_adoption.py": "8ef5a127b9b7d267d1ffde8f9f6120b2a1c86a5a911db04b85a5b4adba0d3d13",
     "tests/test_dependabot_branch_policy.py": "ba6a9984a732aef19d97624df5c456cf71416281f9f1b373a59c493e5b59a00c",
     "tests/test_dependabot_changelog.py": "56b8900045240199a51b49b59cee956b8edc320e12ebd7fd4a874faaf34ffea5",
-    "tests/test_enforce_branch_name.py": "387b8e30bab057f89ecc823446c6878d8a7a899755387dfd835956f707b3913b",
+    "tests/test_enforce_branch_name.py": "7f9f1cbea91b28a42d9c6b568f279f5ee1a318607b7dd7551d32b29973243164",
     "tests/test_enforce_gate_adoption.py": "cc6729281399381622d9fd502dc5d7c2c4667ab0e80b5d9c4d57c7cfb300a5cf",
     "tests/test_enforce_git_identity.py": "7410134f1f2c01f3a11fe38cbaac2b04b3fc30675c83d3db75f8cd1309a014a6",
     "tests/test_external_pr_refs.py": "5d523df56ac9b399f1479a44590203f51edce7f96c8fe209b79be7e9dd0acea7",
@@ -372,12 +375,17 @@
     "tests/test_hook_coverage_runner.py": "3a5de288accf79db076ce888e5d945267a8ad45613160f52c142a4eaede7109b",
     "tests/test_hook_shell_launchers.py": "de6dec9bce06d6578a5f0ab043a4f4e1bb590660a8ef15a5e08aece1d2960eb0",
     "tests/test_immutable_auth_wiring.py": "ec3b874ed2ad4ce68d94a52eae1496f73e3d4580e5314b465b85fd23a43d0eb1",
-    "tests/test_immutable_compliance.py": "430f616955e7dfb74844a644a5c4e2e5912f7ae3381975d54934a7064ae894e1",
+    "tests/test_immutable_compliance.py": "0eee148b22a7319f16cdac7400ecd81c0fa76f864ea74df348a88eaea1ede344",
+    "tests/test_lock_shard_isolation.py": "86401002c742ac1492f4e6a3e2664e1eefcfedbd483cc35819fc5c92ba249f6e",
     "tests/test_logic_consistency.py": "82f8e37c03b7c2298a001cdb4313898b2c140ea0010c262ebc578a12805d8412",
+    "tests/test_native_adapter_completion.py": "54bf1fb12a8342ff5d5d7298d39907caaae344f8cb759b3e2784ade75ee2c8b2",
+    "tests/test_native_argument_ambiguity.py": "55d6df3b21a6ee584213494fc6233414477dccd357f7b987629d75743782a852",
     "tests/test_native_client_enforcement.py": "fb69dac5e0dd015d544e2a81a2bb92432e815730aa2cbaac8e3d9ff9871e2e81",
     "tests/test_native_gate_boundaries.py": "21fdbcc2f9d5629148928615ed834947a91f5e85c9d57f894514395dc47de420",
     "tests/test_native_git_hook.py": "53eb70ce6ba4bd5466fe5ce6d929267ffb2d50b5a8d5df23539928b797196cd0",
     "tests/test_native_launcher_paths.py": "f51aef50165ec84f8ad2b39e4c9369abca8e0cf329dec6238aec6ab59ca13c16",
+    "tests/test_native_schema_regressions.py": "dedeb0ef14c7248fc109804255334df549c0fdf403ae99eabdb49c8d754bec7f",
+    "tests/test_nested_hook_substitution.py": "ac190f301614ebb9df4923c9015f68ba3b7cdecf794527299b90ab2faf1b508a",
     "tests/test_new_runtime_structure.py": "bb200390e40d6900fb1965801c8a4a7cc06354979685d46ffad30fb0b40fe0f7",
     "tests/test_parallel_test_runner.py": "ae9fd8ee946ec21e7fcb22b4a356a4256b32bcacc8784a96fbddac01899c12df",
     "tests/test_persistent_main_worker.py": "fd40524e8148bf90cf5af5061a8dd21f5a09a7f225ebe1b740e1219e096f1c95",
@@ -393,6 +401,10 @@
     "tests/test_reinject_policy_supporting.py": "e1a665631732851384d6884a89f6e88dcc547306609edf9abb7411ef8b43dce6",
     "tests/test_remediation_backup_generation.py": "17556d42daabfcd347ab2e59237f6c7951c3d6eab0c808069fabaa27dbb75dae",
     "tests/test_require_consent.py": "dc080e2542443fefd0e9663bc34a9476fdd18f9a325eeab030663327a1187d01",
+    "tests/test_review_base_provenance.py": "4b15f199d01d7a97690086fb3cb66b1267e86242ee064043a236075d0ca02e03",
+    "tests/test_review_capture_limits.py": "156b9f3c017dd661aa3786facd807767aab57888a954c21de64ef648798d840b",
+    "tests/test_runtime_reader_lock.py": "2ca251c89bc1607863b561b77ac487349f45e4b8584628903709d19a450fa99d",
+    "tests/test_runtime_shared_readers.py": "7a76333a2acc5861ec458663dfdbb7fd210ccdda922b3ba6cc6a923d6daa8c5c",
     "tests/test_security_checkers.py": "9e9a14e9286658117060f121f22e1a62e59f8e9af6ac9c91922a0ce585f8efbb",
     "tests/test_security_remediation.py": "5fa2b2bee5f9c7c2e32f7911205fc2bda5dd3edc134ffbad99a7da369659e63a",
     "tests/test_security_review_wiring.py": "477e578ce987fa228bed91e307ca446aa746ddc71e0257e20a096a0bfef5d6e7",
@@ -402,7 +414,7 @@
     "tests/test_trusted_gh.py": "f1cd08f8816fa0cd572e9b805fc68e38dad6b35c87e846f3f5282bbef7fd72ea",
     "tests/test_trusted_git_state.py": "8c9bf5d29f41b4b9f977437c769afa2cd8e621df9ad7a130a9947654cc274e1d",
     "tests/test_worker_timeout_defaults.py": "0c2bbc5f2c2cfeda25b7ecf7f516ae067995146cc6389e5a0a5ce9c658764a02",
-    "tools/adopt_agents_bundle.py": "e7f25c20144b7062f9bcd70803081013a7b56fbe9fa9fb7872d54a558de964f1",
+    "tools/adopt_agents_bundle.py": "642d00c3f38e800cce73c6f50bc0b7db90f90ddaea0df0bd77e8811a091f4db5",
     "tools/bundle_transaction.py": "76de2a066bb0140b7cc412666f7fddd547ca9aa5ad07f6dd5253289627f0cb90",
     "tools/git-hooks/commit-msg": "beb42e8e015f981c973f9e7399f38229a50aa06f8404f4532672ca5f0a47ca17",
     "tools/git-hooks/pre-commit": "22420a4b00a07409ec3e56fac6a5a2d455fcdfb97c61de981d28717e21724030",
@@ -607,6 +619,172 @@
       "tests/test_registered_windows_launchers.py": {
         "previous": null,
         "sha256": "e9e2d24016b5e83fec364491390ca923c2f6a7d33faf3ea106e436a1aea88641"
+      }
+    }
+  },
+  "repair_verification": {
+    "baseline_revision": "047c261c9c4e932bb72cd4db35114d09d3401e97",
+    "baseline_manifest_sha256": "3b61faa2c72ad09b501df1a503df825821c9dd25de9f56af2f9f7c69fd5fb060",
+    "clients": [
+      "antigravity",
+      "claude",
+      "codex",
+      "gemini"
+    ],
+    "test_decision": "approved",
+    "test_scope": "Require the hash-enforcing trusted-base pip command in ImmutableWorkflowTest.",
+    "differences": {
+      ".agents/hooks.json": {
+        "previous": "7db84d0d13a9dd586831db1ea46229e5915b151543b9b95ce53cc78a8a000b73",
+        "sha256": "69a30817329759989a125ccd60ab59033bc1022e40ef37ad16acfd5a1ac378b0"
+      },
+      ".claude/settings.json": {
+        "previous": "42f9adb3f4e9e8f567cce1f005752e818f06e2f224cd3e7415f890c4a21789f8",
+        "sha256": "629d28e9cfb7d36f25b86c85b7fa3f556957f37d7718af3b96d6d59e885601b9"
+      },
+      ".codex/hooks.json": {
+        "previous": "10f4c51abcd10976ab357d55a15190901adedb2a103c06df7ef0fa2107c84115",
+        "sha256": "cb72e95ca2bd5cfb04d9694b7079609e87f54b267a2c7cb93f605af49c341031"
+      },
+      ".gemini/settings.json": {
+        "previous": "ce0cdef569e15ded4852a157d953ca02f4d8ddee9c94d2558eae9075d39b9b66",
+        "sha256": "750f86222e0fc6a14ea3e596a481f31caa286cd9b171a47935e239a40d24dd5e"
+      },
+      ".github/workflows/agents-compliance.yml": {
+        "previous": "a9e18fe25c777830a0b78855d39916c790b91e1b6eda4d40e8c1ebf5af30f8c8",
+        "sha256": "f9ace91982e6baafb3519436aedd7fa26006a0803fb28609dc79765ce6403f96"
+      },
+      ".github/workflows/immutable-conflict-check.yml": {
+        "previous": "e08c29c942b2868fb1473e9e76566b81d1779c3acbb275bd9ee1fbc065d3e9d4",
+        "sha256": "085a81fa563a05a76bca2b5bac74d4077100e9513d09a57ec843f414528ca549"
+      },
+      ".github/workflows/sync-check.yml": {
+        "previous": "43478a6a0968a6c1231e2e9a7f8468d3f91fec57c6a9ea0fad9c2699f104e925",
+        "sha256": "c5464edf43006cf62f75bd103925b11cefac96412f54fb720036b45e9088db8c"
+      },
+      "CHANGELOG.md": {
+        "previous": "745c2740f12d0371e45b4617cf4330145e7c497b57de63de4d061dc49440ff17",
+        "sha256": "2a9ec37e2c7e9887b8a3612fe96ad6f3e85e7e5af5660616a4b8b188b30e57b5"
+      },
+      "DRIFT.md": {
+        "previous": "7fa188479e8808f05866f67ede01917db2d767affacb62ccc1554a4ca89b9d52",
+        "sha256": "b1af38f4abe8670b3b6c9ad5eebefa8d261d61bfcb638c51f3308656c07c59ba"
+      },
+      "README.md": {
+        "previous": "0f9d281b6466aee3a1494dd4c6e58db0208e55804fe6cc2c9cee97cabc578a44",
+        "sha256": "960b3d23335c69f86b31fb060ab1112d697b2d173e450f673ab697917734f5cb"
+      },
+      "ci/build_pr_case.py": {
+        "previous": "5af5b24708f7d3c5ce0c07b84e6627d3a6b5f7151a57f2b07569553e941e7223",
+        "sha256": "2fdc68b771abbcfc1ec29661968338a2b7938389320a7179ec00514914f8306c"
+      },
+      "docs/gate-threat-model.md": {
+        "previous": "82c012268f7f2f1fdc7c8ded7ea744d61fb2a7a5de625a0a683e99e673c7ad36",
+        "sha256": "c2f6c2b4bd4dcab77fc49fe2309cde05be71adbdbed92821d0f910edc4592e7a"
+      },
+      "hook-coverage-baseline.json": {
+        "previous": "9fa190fcf99a2370ede8ed4f7bdb9db4c63e26a20998852876ca037240ea1086",
+        "sha256": "2c139a8c3c88bb5dbef6029334a3e19f030cc8a69c19d84e035b08fade46fcc1"
+      },
+      "hooks/claude-code-settings.example.json": {
+        "previous": "42f9adb3f4e9e8f567cce1f005752e818f06e2f224cd3e7415f890c4a21789f8",
+        "sha256": "629d28e9cfb7d36f25b86c85b7fa3f556957f37d7718af3b96d6d59e885601b9"
+      },
+      "hooks/native_client_gate.py": {
+        "previous": "278a5d9d83e7fcb01a2bd949e59d02b84ade7d0c6b4da0594ade12ceb38a0ca0",
+        "sha256": "68f6bd1c0dc34a18b5fc4371d578851f4f332143247599505bede2d90909e641"
+      },
+      "requirements-checkers.txt": {
+        "previous": "0969da99a0bc2a1b71ed50584560f4588a37567ac63af3ddbaf3c4617ca5621a",
+        "sha256": "21af2cd953d7e1bd0a617b97f98a955eb0dec4d23f211c6776e6a7951ce46973"
+      },
+      "scripts/check_compliance_tree.py": {
+        "previous": "36b2f3d8ad544c16e1171b2bc49883ab4f789380d7b6a7d8e33c6a0c490113d0",
+        "sha256": "0c7702db0affbb285520309d2a0347ac2c6ab674ee7fc14f51c58482c4cfa507"
+      },
+      "scripts/check_gate_adoption.py": {
+        "previous": "4cecac755f80f9b24b335cf18563b8f4451e04e2c43c3c1dc8c1d39d697f72c8",
+        "sha256": "85e461af75a0094bed72251a3c36a0b307326fa9eb05da665e688c9c00c01a81"
+      },
+      "scripts/check_hook_coverage.py": {
+        "previous": "6f678724d5c9c3222df249e6ad29fd46d3ac4becf2e0dcfef6a6af2886fe7b01",
+        "sha256": "0983ef93bc41d48bf526bdec9c3193b43b026d4d571f40bcd877960bac3da2dd"
+      },
+      "scripts/check_native_hook_launchers.py": {
+        "previous": "0f07d68f9d1dc51cfe55534b54b9df7b084bda909854083c4f5c886b9c7689b0",
+        "sha256": "c4574169a8032a9f7f2db210415ffc39ef85bd4e98d780c86a8a17b13a9b7662"
+      },
+      "scripts/complete_gate_adoption.py": {
+        "previous": "0d411030287e7ac56049c0137ae0dc7a43d404fdfcfcf97e5e91c4e88643ff81",
+        "sha256": "d18aa67ed1ffc0fabef1a33cd8c4e27e24447cb1563c9f7b9e1b5a366bed46b4"
+      },
+      "scripts/hook_launcher_bootstrap.py": {
+        "previous": "e01f2180b79ac35c0b08474e2712238dde5e7c0fd8c7b8eeedde841f40668cf3",
+        "sha256": "35f84d6a21c6c90a86a928c8294a0fb43aff9e966ec06513669f778e51a460c4"
+      },
+      "scripts/runtime-integrity.json": {
+        "previous": null,
+        "sha256": "3805318343000e75a31a7c350d55dd27bf26f0de8431c4add14b35882dc3a18c"
+      },
+      "scripts/seal_hook_runtime.py": {
+        "previous": null,
+        "sha256": "3b23109228ce307fd3aedcf74fc13dc04d4dc91417aabd85f37942f5437eaa3a"
+      },
+      "scripts/verified_hook_runtime.py": {
+        "previous": null,
+        "sha256": "59d97498709cd6242185e1b62df567f5c16482a32e9b440eb04caae153b27c0e"
+      },
+      "shared-files.json": {
+        "previous": "99f0eac62430629dd61457b1009c1f8d34e87e7a29ef5f8510f45678961108e2",
+        "sha256": "8f69c0cf963ab66d84288d2c2758f3ada85639555f10d60b334086d89eb015ac"
+      },
+      "tests/test_enforce_branch_name.py": {
+        "previous": "387b8e30bab057f89ecc823446c6878d8a7a899755387dfd835956f707b3913b",
+        "sha256": "7f9f1cbea91b28a42d9c6b568f279f5ee1a318607b7dd7551d32b29973243164"
+      },
+      "tests/test_immutable_compliance.py": {
+        "previous": "430f616955e7dfb74844a644a5c4e2e5912f7ae3381975d54934a7064ae894e1",
+        "sha256": "0eee148b22a7319f16cdac7400ecd81c0fa76f864ea74df348a88eaea1ede344"
+      },
+      "tests/test_lock_shard_isolation.py": {
+        "previous": null,
+        "sha256": "86401002c742ac1492f4e6a3e2664e1eefcfedbd483cc35819fc5c92ba249f6e"
+      },
+      "tests/test_native_adapter_completion.py": {
+        "previous": null,
+        "sha256": "54bf1fb12a8342ff5d5d7298d39907caaae344f8cb759b3e2784ade75ee2c8b2"
+      },
+      "tests/test_native_argument_ambiguity.py": {
+        "previous": null,
+        "sha256": "55d6df3b21a6ee584213494fc6233414477dccd357f7b987629d75743782a852"
+      },
+      "tests/test_native_schema_regressions.py": {
+        "previous": null,
+        "sha256": "dedeb0ef14c7248fc109804255334df549c0fdf403ae99eabdb49c8d754bec7f"
+      },
+      "tests/test_nested_hook_substitution.py": {
+        "previous": null,
+        "sha256": "ac190f301614ebb9df4923c9015f68ba3b7cdecf794527299b90ab2faf1b508a"
+      },
+      "tests/test_review_base_provenance.py": {
+        "previous": null,
+        "sha256": "4b15f199d01d7a97690086fb3cb66b1267e86242ee064043a236075d0ca02e03"
+      },
+      "tests/test_review_capture_limits.py": {
+        "previous": null,
+        "sha256": "156b9f3c017dd661aa3786facd807767aab57888a954c21de64ef648798d840b"
+      },
+      "tests/test_runtime_reader_lock.py": {
+        "previous": null,
+        "sha256": "2ca251c89bc1607863b561b77ac487349f45e4b8584628903709d19a450fa99d"
+      },
+      "tests/test_runtime_shared_readers.py": {
+        "previous": null,
+        "sha256": "7a76333a2acc5861ec458663dfdbb7fd210ccdda922b3ba6cc6a923d6daa8c5c"
+      },
+      "tools/adopt_agents_bundle.py": {
+        "previous": "e7f25c20144b7062f9bcd70803081013a7b56fbe9fa9fb7872d54a558de964f1",
+        "sha256": "642d00c3f38e800cce73c6f50bc0b7db90f90ddaea0df0bd77e8811a091f4db5"
       }
     }
   }

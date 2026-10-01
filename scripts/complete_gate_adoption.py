@@ -9,6 +9,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from tools.bundle_transaction import exclusive_activation
+
 try:
     import check_gate_adoption as adoption
 except ImportError:
@@ -180,7 +183,8 @@ def main(argv: list[str]) -> int:
         candidate = _candidate(root, options.candidate)
         _validate_candidate(root, candidate)
         paths = _ordered_paths(_candidate_paths(candidate))
-        _install_paths(root, candidate, paths, lambda: _validate_candidate(root, root))
+        with exclusive_activation(root):
+            _install_paths(root, candidate, paths, lambda: _validate_candidate(root, root))
     except (OSError, ValueError, json.JSONDecodeError, subprocess.TimeoutExpired) as error:
         print(f"gate adoption transaction failed: {error}", file=sys.stderr)
         return 1

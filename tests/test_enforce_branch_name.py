@@ -823,6 +823,7 @@ class SettingsWiringTest(unittest.TestCase):
         "enforce_gate_adoption.py": {"*"},
         "enforce_branch_name.py": {"*"},
         "enforce_git_identity.py": {"Bash"},
+        "native_client_gate.py": {"*"},
         "require_consent.py": {"Edit|Write|MultiEdit|NotebookEdit"},
     }
 

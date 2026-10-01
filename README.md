@@ -56,3 +56,19 @@ Configured hook launchers must execute real gates from a subdirectory.
 Native launchers preserve fixed source bytes through quote-retaining argument parsing.
 `scripts/hook_launcher_bootstrap.py` retains the readable bootstrap source.
 Every gate, event, matcher, and authorization check remains active.
+
+## Verified hook runtime
+
+Registrations bind the runtime inventory through a SHA-256 digest.
+The bootstrap verifies the runtime before executing repository hook code.
+Python isolated mode excludes working-directory imports and Python environment overrides.
+Runtime readers hold a shared lock during verification and hook execution.
+Bundle publication holds the corresponding exclusive lock.
+Unknown observable tools deny before execution.
+Separate file reads provide an inspected alternative to unsupported batch-read tools.
+
+Run `python scripts/seal_hook_runtime.py` only inside an approved complete candidate.
+Re-run the complete adoption checks after sealing.
+Activate every client together through the bundle installer.
+Existing client processes must reload changed registrations before coverage applies.
+Repository-writable registrations do not provide an external security boundary.

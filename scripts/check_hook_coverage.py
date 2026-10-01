@@ -56,7 +56,11 @@ PRIORITY_TEST_SHARDS = (
     "test_check_conflict_markers.py::SparseCheckoutTest",
 )
 RESOURCE_HEAVY_TEST_SHARDS = frozenset(PRIORITY_TEST_SHARDS)
-EXCLUSIVE_TEST_SHARDS = RESOURCE_HEAVY_TEST_SHARDS
+REPOSITORY_LOCK_TEST_SHARDS = frozenset((
+    "test_runtime_reader_lock.py::RuntimeReaderLockTest",
+    "test_runtime_shared_readers.py::RuntimeSharedReadersTest",
+))
+EXCLUSIVE_TEST_SHARDS = RESOURCE_HEAVY_TEST_SHARDS | REPOSITORY_LOCK_TEST_SHARDS
 
 
 @dataclass(frozen=True)
