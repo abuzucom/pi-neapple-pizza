@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] (2026-10-01)
+
+### Added
+
+- Import the evals package snapshot.
+
 ## [0.2.7] (2026-10-01)
 
 ### Added
