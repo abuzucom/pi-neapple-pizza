@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] (2026-10-01)
+
+### Added
+
+- Import the agent harness package snapshot.
+
 ## [0.2.0] (2026-10-01)
 
 ### Added
