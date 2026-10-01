@@ -36,9 +36,11 @@ RUN chmod -R go-rwx \
 ENTRYPOINT ["node", "--experimental-strip-types", "docker/entrypoint.ts"]
 
 FROM evaluator AS without_docs
+# runtime-root: this container preserves root-only evaluator sources and isolates model tools by UID (Rule 12 exception).
 COPY --from=without-docs-install /opt/evaluator/install/node_modules /repo/node_modules
 ENV PI_EVAL_VARIANT=without_docs
 
 FROM evaluator AS with_docs
+# runtime-root: this container preserves root-only evaluator sources and isolates model tools by UID (Rule 12 exception).
 COPY --from=builder /opt/evaluator/install/node_modules /repo/node_modules
 ENV PI_EVAL_VARIANT=with_docs

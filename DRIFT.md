@@ -35,6 +35,7 @@ No claim identifies either revision as the latest hosted revision.
 | D023 | Isolate traced workers and clean-root shards. | Preserve bounded Windows traces and fixture assumptions. | Implemented |
 | D024 | Check forge command scope before owner lookup. | Avoid Git configuration reads for unrelated commands. | Implemented |
 | D025 | Parallelize immutable import generation. | Bound independent hashing and local reads without changing approval order. | Implemented |
+| D026 | Retain eval-container runtime root. | Preserve root-only evaluator sources and model-tool UID isolation. | Approved exception with future hardening review |
 
 ## Planned harness boundaries
 

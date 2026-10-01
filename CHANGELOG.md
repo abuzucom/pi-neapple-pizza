@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.20] (2026-10-01)
+
+### Fixed
+
+- Give Windows gate parity checks a neutral project root.
+- Record the approved eval-container runtime-root exception.
+
 ## [0.2.19] (2026-10-01)
 
 ### Documentation
