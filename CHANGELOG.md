@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.15] (2026-10-01)
+
+### Changed
+
+- Pin the approved imported dependency graph and release locks.
+
 ## [0.2.14] (2026-10-01)
 
 ### Added
