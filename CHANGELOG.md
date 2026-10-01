@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.13] (2026-10-01)
+
+### Added
+
+- Import the telemetry package snapshot.
+
 ## [0.2.12] (2026-10-01)
 
 ### Added
