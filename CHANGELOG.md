@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.11] (2026-10-01)
+
+### Added
+
+- Import the server package snapshot.
+
 ## [0.2.10] (2026-10-01)
 
 ### Added
