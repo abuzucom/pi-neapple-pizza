@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.17] (2026-10-01)
+
+### Added
+
+- Add digest-bound preview and apply import automation.
+
 ## [0.2.16] (2026-10-01)
 
 ### Security

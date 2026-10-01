@@ -1,0 +1,100 @@
+name: Import pi upstream
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview or apply the import
+        required: true
+        type: choice
+        options:
+          - preview
+          - apply
+      source_ref:
+        description: Donor branch, tag, or full commit SHA
+        required: true
+        type: string
+      import_approval_digest:
+        description: Exact preview import digest for apply mode
+        required: false
+        type: string
+      dependency_approval_digest:
+        description: Exact dependency digest when dependencies change
+        required: false
+        type: string
+      test_change_approval_digest:
+        description: Exact test digest when existing tests change
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: inputs.mode == 'preview'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Preview bounded import
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+        run: python tools/pi_import_workflow.py preview --report-directory .artifacts/pi-import
+      - name: Upload preview reports
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-preview
+          path: .artifacts/pi-import
+          if-no-files-found: error
+
+  apply:
+    if: inputs.mode == 'apply'
+    runs-on: ubuntu-latest
+    environment: upstream-import
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          # persist-credentials: true: this job pushes the generated import branch (Rule 11 exception).
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.20.0
+          cache: npm
+      - name: Apply approved import
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          IMPORT_APPROVAL_DIGEST: ${{ inputs.import_approval_digest }}
+          DEPENDENCY_APPROVAL_DIGEST: ${{ inputs.dependency_approval_digest }}
+          TEST_CHANGE_APPROVAL_DIGEST: ${{ inputs.test_change_approval_digest }}
+        run: python tools/pi_import_workflow.py apply --report-directory .artifacts/pi-import
+      - name: Verify adopted policy integrity
+        run: |
+          python scripts/check_gate_adoption.py
+          python scripts/sync.py --check
+          python scripts/check_hook_launchers.py
+          python scripts/check_secrets_heuristic.py
+          python scripts/check_weak_hashing.py
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+      - name: Run product validation
+        run: python tools/run_pi_product_validation.py --output .artifacts/pi-import/product-validation.json
+      - name: Publish draft import pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/pi_import_workflow.py publish --report-directory .artifacts/pi-import
+      - name: Upload apply reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-apply
+          path: .artifacts/pi-import
+          if-no-files-found: error
