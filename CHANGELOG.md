@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.2.0] (2026-10-01)
+
+### Added
+
+- Import pi runtime packages from approved donor commit `2bbfcca437c3aa5a21af1e4ee44ae7a051f953ad`.
+- Add SHA-256 import receipts and bounded recurring import previews.
+- Add bounded parallel hashing and local digest generation.
+- Add digest-bound apply mode with draft-only pull request delivery.
+- Add strict policy kernels to the legacy harness and Pico3 harness.
+- Add the `pi-secure` entrypoint with external policy and broker requirements.
+
+### Security
+
+- Recheck authorization and policy freshness before every tool effect.
+- Route classified external effects through a host broker.
+- Reject shell command strings and unclassified tools in strict mode.
+- Persist approval consumption and execution intent before effects.
+- Bound requests, results, rates, workers, and queues.
+- Preserve every adopted agent-policy gate during runtime imports.
+- Check forge command scope before repository-owner inspection.
+
 ## [0.1.1] (2026-09-30)
 
 ### Security
