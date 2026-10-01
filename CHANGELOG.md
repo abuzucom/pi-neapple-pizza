@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.9] (2026-10-01)
+
+### Added
+
+- Import the MCP package snapshot.
+
 ## [0.2.8] (2026-10-01)
 
 ### Added
