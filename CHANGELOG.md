@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.12] (2026-10-01)
+
+### Added
+
+- Import the session-backends package snapshot.
+
 ## [0.2.11] (2026-10-01)
 
 ### Added
