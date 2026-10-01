@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.16] (2026-10-01)
+
+### Security
+
+- Add strict policy kernels and the secure runtime entrypoint.
+
 ## [0.2.15] (2026-10-01)
 
 ### Changed
