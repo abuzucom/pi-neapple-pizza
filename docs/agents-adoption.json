@@ -204,16 +204,16 @@
     "line_ending_conversion": "CRLF to LF only"
   },
   "files": {
-    ".agents/hooks.json": "8b8173af5ce760f55eff3a49f6138b9ddbd86f157d5718c1dbbf303a74877cd9",
+    ".agents/hooks.json": "7db84d0d13a9dd586831db1ea46229e5915b151543b9b95ce53cc78a8a000b73",
     ".claude/settings.json": "42f9adb3f4e9e8f567cce1f005752e818f06e2f224cd3e7415f890c4a21789f8",
     ".claudeignore": "30586839895ef8414a66bcecc80dd9b78350bb87daa061485fa66761d550930a",
     ".clinerules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".codex/config.toml": "a9b8ff9101614775fa873884108b3d9c9b662b22df8ca705c883ed4e1b3c343a",
-    ".codex/hooks.json": "70d82ccafd710bed3e342f1e145b2d6f563ec1034f76fedb3d73e1b5fb005b9b",
+    ".codex/hooks.json": "10f4c51abcd10976ab357d55a15190901adedb2a103c06df7ef0fa2107c84115",
     ".copilot-instructions": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".cursorrules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     ".editorconfig": "b54e6b2dc7b0f47365519282b24b6f54912d473fcc7fc5b78ecaae96af13c23c",
-    ".gemini/settings.json": "ac4aa460a89aecab61a4aab4b035fcc563018a0da28afb53c0eec934f0878b5a",
+    ".gemini/settings.json": "ce0cdef569e15ded4852a157d953ca02f4d8ddee9c94d2558eae9075d39b9b66",
     ".gitattributes": "d54c8c98c5dbc63ee5d1e0fbf61d6afaa395456024dd961a98deb724527c95df",
     ".github/ISSUE_TEMPLATE.md": "3f217bca16d552b383ba2c34ac228e563e9187c4f95a23e9c919fd998d2a2c8e",
     ".github/PULL_REQUEST_TEMPLATE.md": "5290b36ce530a7a04dd42c88892c09a36237d1e2a1dddc75d9d72214f9580c1a",
@@ -229,15 +229,15 @@
     ".pre-commit-config.yaml": "50a243a92c34cbfb8e2192175569f7b9f727b09af8aea39f056731e39417a7a7",
     ".windsurfrules": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "AGENTS.md": "03de7543f6fbbea96d789b36667269dbc0722a9d055c0c79f0f50e23316889b2",
-    "CHANGELOG.md": "044ffeee076c5d8dc0e941cc2fa2027d25d7e58fc93aab8c11b4fcfd248829f6",
+    "CHANGELOG.md": "745c2740f12d0371e45b4617cf4330145e7c497b57de63de4d061dc49440ff17",
     "CLAUDE.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "CONTRIBUTING.md": "3b140b82a98a1f9305b51989cc6803ff398b74125e3e29f96d538f482cb1326f",
     "CONTRIBUTING.md.example": "3b140b82a98a1f9305b51989cc6803ff398b74125e3e29f96d538f482cb1326f",
     "CONVENTIONS.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
-    "DRIFT.md": "17ca3430cc135397b80707808e8af322c257928fc51d0d4ef86289bf51d8338c",
+    "DRIFT.md": "7fa188479e8808f05866f67ede01917db2d767affacb62ccc1554a4ca89b9d52",
     "GEMINI.md": "f18b2e18ab2676ed447ad9655c416d480b07c70406552835b540de904a775639",
     "Makefile": "d063f7fc9e3f3978d3c1b8189992fb355c1b698a078786bf9dbd7337318c5047",
-    "README.md": "21df25bc2532f46dd045d6bfd6c7ff18ce3dc66c1f08ac234a5f20a4f49a1028",
+    "README.md": "0f9d281b6466aee3a1494dd4c6e58db0208e55804fe6cc2c9cee97cabc578a44",
     "SECURITY.md": "77fc608d5fe882f62d1e302c612b5155de1eca430fa54bef96836355964977d4",
     "SECURITY.md.example": "77fc608d5fe882f62d1e302c612b5155de1eca430fa54bef96836355964977d4",
     "ci/build_pr_case.py": "5af5b24708f7d3c5ce0c07b84e6627d3a6b5f7151a57f2b07569553e941e7223",
@@ -287,13 +287,13 @@
     "scripts/check_dockerfile_root.py": "0b0b3be2e19713f8016c5a6e84d6b4ca74e9e95fe44e1908f5530253f5fbdfc9",
     "scripts/check_english_only.py": "0358dc316c99a402b87c5a0c6c6932f02c895625f446401152551873a3114c08",
     "scripts/check_external_pr_refs.py": "3a250c40883c2a2836413c24727df4411953880700b051394c982607edee7ce3",
-    "scripts/check_gate_adoption.py": "f81bbf0639942a0ee4fad808bf520df3dead2172cd71eb429c28094dc64d48f5",
+    "scripts/check_gate_adoption.py": "4cecac755f80f9b24b335cf18563b8f4451e04e2c43c3c1dc8c1d39d697f72c8",
     "scripts/check_gate_pr_integrity.py": "75b1e0a4776bbf75c91682d803c817604b84a2decdc769679ae103a3a4d39b30",
     "scripts/check_git_identity.py": "782a174a6bb9c5e1c3480db8087631112cb73df2ad977a0ca2d73b6889419d5d",
     "scripts/check_hedging.py": "fb2d368e2fbf785419836c5e1ee23d980b0cbba9a68054a5a800c6025aba383d",
     "scripts/check_hook_coverage.py": "6f678724d5c9c3222df249e6ad29fd46d3ac4becf2e0dcfef6a6af2886fe7b01",
     "scripts/check_hook_launchers.py": "5e59a28b3a23f10d1744233a88a24eac5e3c488565ff485f14fdc53ce0b6809b",
-    "scripts/check_native_hook_launchers.py": "1b9219a0234725697ca5ee44501d5a2639a74701f7f04cf4b1f73ce8a1a60d44",
+    "scripts/check_native_hook_launchers.py": "0f07d68f9d1dc51cfe55534b54b9df7b084bda909854083c4f5c886b9c7689b0",
     "scripts/check_persist_credentials.py": "5425920259fcbc4173faffc39ee08bc4197c261a32b5093df4c296539c19eade",
     "scripts/check_policy_size.py": "bd923b8281a6a8793cb7b0597edeb9c155cc4929c63bac88cf041a1994f8e8fd",
     "scripts/check_pr_review_response.py": "d96f3f356821e3d123d0cfbf2bff322fee086e6a45f3665c6ca85f803c386a27",
@@ -305,6 +305,7 @@
     "scripts/complete_gate_adoption.py": "0d411030287e7ac56049c0137ae0dc7a43d404fdfcfcf97e5e91c4e88643ff81",
     "scripts/create_dependabot_changelog_pr.py": "9717ae74b95dfbe223643dd708ac3de2afd2328f7e0793ccf591afe7f3e9ac0f",
     "scripts/handoff_policy.py": "8506e7175c2f1729e35644eedf7c3c97b9116518c019b8ae7bc802d8e5884d21",
+    "scripts/hook_launcher_bootstrap.py": "e01f2180b79ac35c0b08474e2712238dde5e7c0fd8c7b8eeedde841f40668cf3",
     "scripts/lint_style.py": "53f46e2a016575e853910abb3a0a97a46939b503060255197511c18b6a572514",
     "scripts/prose_bans.txt": "66b5dbca3a3e8238ff7af969a4ac458802aa6e431be7d533df4c926fa16d553d",
     "scripts/prose_policy.py": "e525ef1491c2e3b6b9ac5c1509eb8b291bc2dd41bcc1804b0155161ba345f256",
@@ -313,7 +314,7 @@
     "scripts/sync.py": "5bb502670e0999e022659c20cb44ee5778eec98ca737cfd52281cb283690e97f",
     "scripts/trusted_gh.py": "f92d1677890424f31397636e2cad00dddd5e0b299e4e68be2ff12cb8ea49b5c4",
     "scripts/trusted_git.py": "38dc1d0fbbc539d452a395f659a66b77853c58054ea4ac80c2360cd6c567ebe0",
-    "shared-files.json": "e7dfef8ec2d9e4f794cc7ead9b06c81425b3fd6010c7466ce1d3103ba88a9ab5",
+    "shared-files.json": "99f0eac62430629dd61457b1009c1f8d34e87e7a29ef5f8510f45678961108e2",
     "tests/fixtures/malformed-github-command-denylist.txt": "2cf4ad18d7cec1035cf690331fafa50e48ca58aba058f6362a65cbd7fb426758",
     "tests/gate_corpus.py": "cdd1a64831a8001fabc592df45f9c80ef2705c963cae31e20e75eb67dc44000a",
     "tests/json_line_worker.py": "57cbf9ed4c57506201e9c9e4ae57d6b8a330d5ede2f8fb76f0c4f72dae55fc0b",
@@ -327,7 +328,7 @@
     "tests/test_block_destructive_cmd.py": "80d8a3039dd5a9cfba4c2ffa38560b10be43a7ae976cadbed28ca9cef344798f",
     "tests/test_block_destructive_powershell.py": "b5c01603e5d78b4e78710772e4f6e8ff5ff33a529f2030044d282fec0b32e6ce",
     "tests/test_block_infrastructure_access.py": "95d1b9d90e72418549c41fc231449897097d75da7777442f42dcf1a746c47f1f",
-    "tests/test_branch_review_regressions.py": "8dc61bc4aa0a8b43076a254ef1beae49f7bc55a77243fa6f9f9baff480af5ccb",
+    "tests/test_branch_review_regressions.py": "425de161835cca3a3fa40ee04397698d679914e1cf0c2a0f20fd3c28cef27e92",
     "tests/test_branch_validation_boundaries.py": "4473546f30a4d0d86c298345641927d651bfd8861f6d04ecbd6b5f1d01234ff1",
     "tests/test_branch_validation_bypasses.py": "b0b5a3217afb5c66dd2f4bc25f56bc587dc0b9a355f06c9f28d3f41f356296d5",
     "tests/test_branch_validation_contexts.py": "9d321d3b1f9b1a4e74f3e0513cadf0afa6cbc9c959cc4f019fa5332fa85c1d76",
@@ -367,7 +368,9 @@
     "tests/test_git_policy_hook.py": "bb135f3b8e09f876977e6a5145482c8775a358a6ea7e95a12027e76babab5275",
     "tests/test_github_command_denylist.py": "83de76252ce1a8e5210566c07e24c0dd09e1d4643d8994672fb3e8a2fc82dd72",
     "tests/test_hook_adapter_boundaries.py": "36e02817df2d78d7b455193a3c49e722d8bf3f10b3d0c92b91ca1abfaf6d35ca",
+    "tests/test_hook_bootstrap_preconditions.py": "5118d518d764a253590b85eab6f884eee570a39af627e705bcb677b7ca61aff4",
     "tests/test_hook_coverage_runner.py": "3a5de288accf79db076ce888e5d945267a8ad45613160f52c142a4eaede7109b",
+    "tests/test_hook_shell_launchers.py": "de6dec9bce06d6578a5f0ab043a4f4e1bb590660a8ef15a5e08aece1d2960eb0",
     "tests/test_immutable_auth_wiring.py": "ec3b874ed2ad4ce68d94a52eae1496f73e3d4580e5314b465b85fd23a43d0eb1",
     "tests/test_immutable_compliance.py": "430f616955e7dfb74844a644a5c4e2e5912f7ae3381975d54934a7064ae894e1",
     "tests/test_logic_consistency.py": "82f8e37c03b7c2298a001cdb4313898b2c140ea0010c262ebc578a12805d8412",
@@ -385,6 +388,7 @@
     "tests/test_policy_size_wiring.py": "95d255e4e328b54479350ff89d9ee474e1723c7d49dd27613261badecc27bfe0",
     "tests/test_prose_metadata.py": "8210a8385c4f7e94b3598d3dadc4dfa5bfab8e4fbd84622ed5dc15bcf4d6c918",
     "tests/test_prose_policy.py": "809865c42a7c09f7db70468dc0bab82f7d926328ed343dcae58a01a93348dc16",
+    "tests/test_registered_windows_launchers.py": "e9e2d24016b5e83fec364491390ca923c2f6a7d33faf3ea106e436a1aea88641",
     "tests/test_reinject_agents_policy.py": "f3d6f7e0f13d62f8161a96559be6dca6ac8a65ae143841fe926f7ee3302e05f8",
     "tests/test_reinject_policy_supporting.py": "e1a665631732851384d6884a89f6e88dcc547306609edf9abb7411ef8b43dce6",
     "tests/test_remediation_backup_generation.py": "17556d42daabfcd347ab2e59237f6c7951c3d6eab0c808069fabaa27dbb75dae",
@@ -534,6 +538,75 @@
       "tools/bundle_transaction.py": {
         "previous": "78d3a0680b407d1810908e6a8d90e8b81221e4ac43cf65ab74069abc408fd6cf",
         "sha256": "76de2a066bb0140b7cc412666f7fddd547ca9aa5ad07f6dd5253289627f0cb90"
+      }
+    }
+  },
+  "launcher_verification": {
+    "baseline_revision": "9259fad296b90a2468dfc105c5c90ce463a6d3bd",
+    "baseline_manifest_sha256": "07974e36f3a56642d0c13526099cc1810bc82e649a0e7acdd5687438546e646e",
+    "authorization": "Authorize the resumed plan",
+    "clients": [
+      "antigravity",
+      "claude",
+      "codex",
+      "gemini"
+    ],
+    "differences": {
+      ".agents/hooks.json": {
+        "previous": "8b8173af5ce760f55eff3a49f6138b9ddbd86f157d5718c1dbbf303a74877cd9",
+        "sha256": "7db84d0d13a9dd586831db1ea46229e5915b151543b9b95ce53cc78a8a000b73"
+      },
+      ".codex/hooks.json": {
+        "previous": "70d82ccafd710bed3e342f1e145b2d6f563ec1034f76fedb3d73e1b5fb005b9b",
+        "sha256": "10f4c51abcd10976ab357d55a15190901adedb2a103c06df7ef0fa2107c84115"
+      },
+      ".gemini/settings.json": {
+        "previous": "ac4aa460a89aecab61a4aab4b035fcc563018a0da28afb53c0eec934f0878b5a",
+        "sha256": "ce0cdef569e15ded4852a157d953ca02f4d8ddee9c94d2558eae9075d39b9b66"
+      },
+      "CHANGELOG.md": {
+        "previous": "044ffeee076c5d8dc0e941cc2fa2027d25d7e58fc93aab8c11b4fcfd248829f6",
+        "sha256": "745c2740f12d0371e45b4617cf4330145e7c497b57de63de4d061dc49440ff17"
+      },
+      "DRIFT.md": {
+        "previous": "17ca3430cc135397b80707808e8af322c257928fc51d0d4ef86289bf51d8338c",
+        "sha256": "7fa188479e8808f05866f67ede01917db2d767affacb62ccc1554a4ca89b9d52"
+      },
+      "README.md": {
+        "previous": "21df25bc2532f46dd045d6bfd6c7ff18ce3dc66c1f08ac234a5f20a4f49a1028",
+        "sha256": "0f9d281b6466aee3a1494dd4c6e58db0208e55804fe6cc2c9cee97cabc578a44"
+      },
+      "scripts/check_gate_adoption.py": {
+        "previous": "f81bbf0639942a0ee4fad808bf520df3dead2172cd71eb429c28094dc64d48f5",
+        "sha256": "4cecac755f80f9b24b335cf18563b8f4451e04e2c43c3c1dc8c1d39d697f72c8"
+      },
+      "scripts/check_native_hook_launchers.py": {
+        "previous": "1b9219a0234725697ca5ee44501d5a2639a74701f7f04cf4b1f73ce8a1a60d44",
+        "sha256": "0f07d68f9d1dc51cfe55534b54b9df7b084bda909854083c4f5c886b9c7689b0"
+      },
+      "scripts/hook_launcher_bootstrap.py": {
+        "previous": null,
+        "sha256": "e01f2180b79ac35c0b08474e2712238dde5e7c0fd8c7b8eeedde841f40668cf3"
+      },
+      "shared-files.json": {
+        "previous": "e7dfef8ec2d9e4f794cc7ead9b06c81425b3fd6010c7466ce1d3103ba88a9ab5",
+        "sha256": "99f0eac62430629dd61457b1009c1f8d34e87e7a29ef5f8510f45678961108e2"
+      },
+      "tests/test_branch_review_regressions.py": {
+        "previous": "8dc61bc4aa0a8b43076a254ef1beae49f7bc55a77243fa6f9f9baff480af5ccb",
+        "sha256": "425de161835cca3a3fa40ee04397698d679914e1cf0c2a0f20fd3c28cef27e92"
+      },
+      "tests/test_hook_bootstrap_preconditions.py": {
+        "previous": null,
+        "sha256": "5118d518d764a253590b85eab6f884eee570a39af627e705bcb677b7ca61aff4"
+      },
+      "tests/test_hook_shell_launchers.py": {
+        "previous": null,
+        "sha256": "de6dec9bce06d6578a5f0ab043a4f4e1bb590660a8ef15a5e08aece1d2960eb0"
+      },
+      "tests/test_registered_windows_launchers.py": {
+        "previous": null,
+        "sha256": "e9e2d24016b5e83fec364491390ca923c2f6a7d33faf3ea106e436a1aea88641"
       }
     }
   }

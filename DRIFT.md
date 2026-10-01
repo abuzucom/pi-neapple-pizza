@@ -102,3 +102,24 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+
+## Windows launcher correction
+
+- D016 replaces quoted multiline native bootstrap arguments with fixed byte literals.
+  A single Python argument carries the reviewed bootstrap source.
+  `scripts/hook_launcher_bootstrap.py` retains the readable source.
+  Launcher checks compare every configured byte literal against that source.
+  Hook names and client arguments remain separate arguments.
+  No tool payload supplies executable bootstrap source.
+  All configured clients receive real branch gate probes from a subdirectory.
+  Claude retains structured arguments without inline Python source.
+  Native probes exercise POSIX and quote-retaining argument tokenization.
+  Shell probes exercise PowerShell, CMD, and Git Bash on Windows.
+  POSIX shell probes use `/bin/sh` on macOS and Linux.
+  The bootstrap checks argument presence before indexing.
+  The bootstrap allowlists entry points before path construction.
+  The bootstrap rejects resolved targets outside the repository before execution.
+
+Local probes verify registered command execution and gate responses.
+Installed application trust and undocumented hook inheritance require separate verification.
+No change removes a gate, matcher, event, or test assertion.

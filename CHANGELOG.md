@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2] (2026-09-30)
+
+### Fixed
+
+- Preserve fixed hook source bytes through Windows argument parsing.
+- Verify real branch gate execution across every configured client.
+- Retain Claude structured arguments and complete gate registrations.
+
 ## [0.1.1] (2026-09-30)
 
 ### Security

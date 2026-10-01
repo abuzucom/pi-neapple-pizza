@@ -10,8 +10,8 @@ from pathlib import Path
 from tests.test_enforce_branch_name import HOOK_PATH, REPO_ROOT
 
 
-class BranchReviewTest(unittest.TestCase):
-    """Send candidate commands to the real hook without executing candidates."""
+class BranchReviewFixture(unittest.TestCase):
+    """Provide isolated metadata for real hook invocation."""
 
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -40,6 +40,11 @@ class BranchReviewTest(unittest.TestCase):
             [sys.executable, str(HOOK_PATH)], input=json.dumps(payload),
             env=self.environment, capture_output=True, text=True, timeout=15, check=False,
         )
+
+
+
+class BranchReviewTest(BranchReviewFixture):
+    """Verify metadata protections and trace side effects."""
 
     def test_rejected_commands_cannot_write_trace_or_redirect_files(self) -> None:
         destination = self.root / "output.txt"
@@ -107,6 +112,11 @@ class BranchReviewTest(unittest.TestCase):
                 result = self.run_candidate(command)
                 self.assertEqual(result.returncode, 2, result.stdout)
                 self.assertIn("metadata", result.stderr)
+
+
+
+class BranchWorkflowConsentTest(BranchReviewFixture):
+    """Verify workflow consent through real client responses."""
 
     def test_required_workflows_request_consent(self) -> None:
         for command in ("python scripts/run_tests.py", "python scripts/read_git_state.py all",

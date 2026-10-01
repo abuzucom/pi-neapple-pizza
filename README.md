@@ -48,3 +48,11 @@ Retain junction rejection on Windows.
 The regression suite also requires Node.js for workflow JavaScript execution.
 Native client adapters inspect observable shell and file tools.
 Consult `docs/gate-threat-model.md` for consent and hosted-tool limitations.
+
+## Windows hook launchers
+
+Configured hook launchers must execute real gates from a subdirectory.
+`scripts/check_hook_launchers.py` verifies Claude, Codex, Gemini, and Antigravity.
+Native launchers preserve fixed source bytes through quote-retaining argument parsing.
+`scripts/hook_launcher_bootstrap.py` retains the readable bootstrap source.
+Every gate, event, matcher, and authorization check remains active.

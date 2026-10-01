@@ -35,6 +35,7 @@ CLIENT_HOOKS = (
     f"hooks/{TRANSACTION_HOOK}",
 )
 REQUIRED_CHECKERS = (
+    "scripts/hook_launcher_bootstrap.py",
     "scripts/check_native_hook_launchers.py",
     "scripts/check_banned_agents.py",
     "scripts/check_branch_name.py",
