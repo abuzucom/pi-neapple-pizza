@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Resolve GitHub CLI outside the repository and return bounded account data."""
+import datetime as dt
 import json
 import os
 import re
@@ -23,7 +24,12 @@ TEXT_OPTIONS = frozenset(("--body", "--title"))
 REPOSITORY_COMMANDS = frozenset(("pr", "issue", "run"))
 REPOSITORY_NAME = re.compile(r"\A[A-Za-z0-9](?:[A-Za-z0-9._-]{0,98}[A-Za-z0-9])?\Z")
 BRANCH_NAME = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._/-]{0,199}\Z")
+FULL_SHA = re.compile(r"\A[0-9a-f]{40}\Z")
 GLOBAL_VALUE_OPTIONS = frozenset(("-R", "--repo", "--hostname"))
+WORKFLOW_REPOSITORY = "abuzucom/pi-neapple-pizza"
+WORKFLOW_BRANCH_PREFIX = "chore/import-pi-update-"
+WORKFLOW_BRANCH = re.compile(rf"\A{re.escape(WORKFLOW_BRANCH_PREFIX)}([0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}})\Z")
+WORKFLOW_BODY_PATH = Path("pi-import-publication") / "pull-request-body.md"
 
 
 def find_literal_escape_sequences(arguments: list[str]) -> list[str]:
@@ -347,6 +353,147 @@ def authenticated_account(repo_root) -> dict:
     return parse_account(result.stdout)
 
 
+def validate_workflow_context(repo_root: Path) -> None:
+    """Require one manual main-branch dispatch for the current repository."""
+    expected = repository_target(repo_root)
+    if expected.casefold() != WORKFLOW_REPOSITORY.casefold():
+        raise ValueError("workflow mode is limited to the current repository")
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        raise ValueError("workflow mode requires GitHub Actions")
+    if os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch":
+        raise ValueError("workflow mode requires workflow dispatch")
+    if os.environ.get("GITHUB_REF") != "refs/heads/main":
+        raise ValueError("workflow mode requires dispatch from main")
+    if os.environ.get("GITHUB_REPOSITORY", "").casefold() != expected.casefold():
+        raise ValueError("workflow repository differs from the current repository")
+    if FULL_SHA.fullmatch(os.environ.get("GITHUB_SHA", "")) is None:
+        raise ValueError("workflow dispatch SHA is invalid")
+
+
+def workflow_actor(repo_root: Path) -> dict:
+    """Resolve the triggering actor through one fixed public user request."""
+    validate_workflow_context(repo_root)
+    actor = os.environ.get("GITHUB_TRIGGERING_ACTOR", "")
+    if LOGIN.fullmatch(actor) is None:
+        raise ValueError("workflow triggering actor is invalid")
+    result = run_gh(
+        repo_root,
+        ["api", f"users/{actor}", "--jq", "[.id,.login]|@tsv"],
+        timeout=GH_TIMEOUT_SECONDS,
+    )
+    if result.returncode != 0:
+        raise OSError("GitHub CLI cannot resolve the workflow triggering actor")
+    account = parse_account(result.stdout)
+    if account["login"].casefold() != actor.casefold():
+        raise ValueError("workflow triggering actor response does not match")
+    return account
+
+
+def _option_pairs(arguments: list[str], allowed: frozenset[str]) -> dict[str, str] | None:
+    """Parse one command tail containing unique fixed value options."""
+    if len(arguments) % 2 != 0:
+        return None
+    values: dict[str, str] = {}
+    for index in range(0, len(arguments), 2):
+        option = arguments[index]
+        if option not in allowed or option in values:
+            return None
+        values[option] = arguments[index + 1]
+    return values
+
+
+def workflow_branch_date(value: str) -> str | None:
+    """Return the date from one valid generated import branch."""
+    match = WORKFLOW_BRANCH.fullmatch(value)
+    if match is None:
+        return None
+    date_value = match.group(1)
+    try:
+        dt.date.fromisoformat(date_value)
+    except ValueError:
+        return None
+    return date_value
+
+
+def workflow_command_allowed(arguments: list[str]) -> bool:
+    """Allow only required import publication reads and draft creation."""
+    if arguments[:2] == ["pr", "list"]:
+        values = _option_pairs(
+            arguments[2:],
+            frozenset(("--state", "--head", "--search", "--json", "--limit")),
+        )
+        if values is None:
+            return False
+        common = (
+            values.get("--state") == "all"
+            and values.get("--json") == "url"
+            and values.get("--limit") == "1"
+        )
+        if set(values) == {"--state", "--head", "--json", "--limit"}:
+            return common and workflow_branch_date(values["--head"]) is not None
+        if set(values) == {"--state", "--search", "--json", "--limit"}:
+            return common and re.fullmatch(r"[0-9a-f]{64} in:body", values["--search"]) is not None
+        return False
+    if arguments[:2] != ["pr", "create"] or "--draft" not in arguments:
+        return False
+    tail = [argument for argument in arguments[2:] if argument != "--draft"]
+    values = _option_pairs(tail, frozenset(("--base", "--head", "--title", "--body-file")))
+    if values is None:
+        return False
+    branch_date = workflow_branch_date(values.get("--head", ""))
+    return (
+        set(values) == {"--base", "--head", "--title", "--body-file"}
+        and values["--base"] == "main"
+        and branch_date is not None
+        and values["--title"] == f"chore: import pi update {branch_date}"
+    )
+
+
+def validate_workflow_body_file(value: str) -> Path:
+    """Require the fixed publication report without linked path components."""
+    runner_temp_value = os.environ.get("RUNNER_TEMP")
+    if runner_temp_value is None:
+        raise ValueError("workflow runner temporary directory is absent")
+    runner_temp = Path(runner_temp_value)
+    candidate = Path(value)
+    if not runner_temp.is_absolute() or not candidate.is_absolute():
+        raise ValueError("workflow publication report path must be absolute")
+    resolved_root = runner_temp.resolve(strict=True)
+    try:
+        relative = candidate.relative_to(resolved_root)
+    except ValueError as error:
+        raise ValueError("workflow body file must use the publication report") from error
+    if relative != WORKFLOW_BODY_PATH:
+        raise ValueError("workflow body file must use the publication report")
+    current = resolved_root
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ValueError("workflow publication report must not contain links")
+    if not current.is_file():
+        raise ValueError("workflow pull request body file is missing")
+    return current.resolve(strict=True)
+
+
+def _run_workflow_command(repo_root: Path, arguments: list[str]) -> int:
+    """Run one narrow current-repository workflow command."""
+    try:
+        validate_workflow_context(repo_root)
+        if not workflow_command_allowed(arguments):
+            raise ValueError("workflow GitHub command is outside the publication allowlist")
+        if arguments[:2] == ["pr", "create"]:
+            body_index = arguments.index("--body-file") + 1
+            arguments[body_index] = str(validate_workflow_body_file(arguments[body_index]))
+        effective_arguments = with_repository_context(repo_root, arguments)
+        result = run_gh(repo_root, effective_arguments)
+    except (FileNotFoundError, OSError, ValueError, subprocess.TimeoutExpired) as error:
+        print(f"error: trusted workflow GitHub command failed: {error}", file=sys.stderr)
+        return 1
+    sys.stdout.write(result.stdout[:COMMAND_OUTPUT_LIMIT])
+    sys.stderr.write(result.stderr[:COMMAND_OUTPUT_LIMIT])
+    return result.returncode
+
+
 def _run_requested_command(repo_root, arguments: list[str]) -> int:
     """Run one authenticated GitHub CLI command with bounded output."""
     if not arguments:
@@ -402,8 +549,20 @@ def _run_requested_command(repo_root, arguments: list[str]) -> int:
 def main() -> int:
     """Print bounded authenticated account metadata as JSON."""
     if len(sys.argv) > 1:
+        if sys.argv[1] == "workflow":
+            if sys.argv[2:] == ["actor"]:
+                try:
+                    print(json.dumps(workflow_actor(Path.cwd()), sort_keys=True))
+                    return 0
+                except (FileNotFoundError, OSError, ValueError, subprocess.TimeoutExpired) as error:
+                    print(f"error: trusted workflow actor lookup failed: {error}", file=sys.stderr)
+                    return 1
+            if sys.argv[2:3] == ["gh"]:
+                return _run_workflow_command(Path.cwd(), sys.argv[3:])
+            print("error: workflow mode expects actor or gh", file=sys.stderr)
+            return 2
         if sys.argv[1] != "run":
-            print("error: expected 'run' or no arguments", file=sys.stderr)
+            print("error: expected 'run', 'workflow', or no arguments", file=sys.stderr)
             return 2
         return _run_requested_command(os.getcwd(), sys.argv[2:])
     try:

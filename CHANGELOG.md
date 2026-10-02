@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.24] (2026-10-02)
+
+### Security
+
+- Separate import preparation, validation, and protected publication workflows.
+
 ## [0.2.23] (2026-10-02)
 
 ### Security

@@ -13,6 +13,7 @@ from pathlib import Path
 MAX_CAPTURE_BYTES = 262_144
 NPM_EXECUTABLE = "npm.cmd" if os.name == "nt" else "npm"
 VALIDATIONS = (
+    ("install", [NPM_EXECUTABLE, "ci", "--ignore-scripts"]),
     ("biome", [NPM_EXECUTABLE, "exec", "--", "biome", "check", "--error-on-warnings", "."]),
     ("typescript", [NPM_EXECUTABLE, "exec", "--", "tsc", "--noEmit"]),
     ("build", [NPM_EXECUTABLE, "run", "build:offline"]),
