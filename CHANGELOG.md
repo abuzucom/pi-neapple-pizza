@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.25] (2026-10-02)
+
+### Security
+
+- Run blocking Linux importer and harness security validation in pull requests.
+
 ## [0.2.24] (2026-10-02)
 
 ### Security
