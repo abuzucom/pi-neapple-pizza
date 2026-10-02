@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomUUID } from "node:crypto";
+import { existsSync, realpathSync } from "node:fs";
 import path from "node:path";
 import type { Context } from "./context.ts";
 import type { JsonValue } from "./session/types.ts";
@@ -21,6 +22,7 @@ export interface EnforcementLimits {
 	readonly maxCallsPerMinute: number;
 	readonly maxRequestBytes: number;
 	readonly maxResultBytes: number;
+	readonly maxQueueWaitMs?: number;
 }
 
 export interface ToolPolicySource {
@@ -67,6 +69,7 @@ export interface BrokerRequest extends EnforcementRequest {
 	readonly argumentsDigest: string;
 	readonly policyDigest: string;
 	readonly policyRevision: string;
+	readonly validatedDestination?: string;
 }
 
 export interface AuditEvent {
@@ -169,6 +172,7 @@ export interface EnforcementKernelOptions {
 	readonly host: SecurityHost;
 	readonly approvals?: ApprovalSource;
 	readonly now?: () => number;
+	readonly workingDirectory?: string;
 }
 
 interface CompiledToolPolicy {
@@ -187,9 +191,23 @@ interface CompiledPolicy {
 }
 
 interface QueueEntry {
+	readonly key: symbol;
 	readonly resolve: (release: () => void) => void;
 	readonly reject: (error: Error) => void;
+	readonly signal: AbortSignal | undefined;
+	readonly abort: () => void;
+	readonly timer: ReturnType<typeof setTimeout>;
 }
+
+interface CheckedRequest {
+	readonly argumentsDigest: string;
+	readonly validatedDestination?: string;
+}
+
+const DEFAULT_MAX_QUEUE_WAIT_MS = 30_000;
+const MAX_CANONICAL_JSON_DEPTH = 64;
+const CALL_TIME_COMPACTION_THRESHOLD = 1_024;
+const CALL_RATE_WINDOW_MS = 60_000;
 
 class PolicyViolation extends Error {
 	readonly code: string;
@@ -211,20 +229,100 @@ export class EnforcementDenied extends Error {
 	}
 }
 
-function sortJson(value: unknown): unknown {
-	if (Array.isArray(value)) return value.map(sortJson);
-	if (value === null || typeof value !== "object") return value;
-	return Object.fromEntries(
-		Object.entries(value as Record<string, unknown>)
-			.sort(([left], [right]) => left.localeCompare(right))
-			.map(([key, nested]) => [key, sortJson(nested)]),
-	);
+function sortJsonArray(
+	value: unknown[],
+	depth: number,
+	ancestors: Set<object>,
+	omitUndefinedObjectProperties: boolean,
+): unknown[] {
+	const names = Object.getOwnPropertyNames(value);
+	const keys = Object.keys(value);
+	if (
+		Object.getOwnPropertySymbols(value).length > 0 ||
+		names.length !== value.length + 1 ||
+		keys.length !== value.length
+	) {
+		throw new TypeError("canonical JSON array contains unsupported properties");
+	}
+	return keys.map((key, index) => {
+		if (key !== String(index)) throw new TypeError("canonical JSON array is sparse");
+		const descriptor = Object.getOwnPropertyDescriptor(value, key);
+		if (descriptor === undefined || "get" in descriptor || "set" in descriptor) {
+			throw new TypeError("canonical JSON must not contain accessors");
+		}
+		return sortJson(descriptor.value, depth + 1, ancestors, omitUndefinedObjectProperties);
+	});
+}
+
+function sortJsonObject(
+	value: object,
+	depth: number,
+	ancestors: Set<object>,
+	omitUndefinedObjectProperties: boolean,
+): Record<string, unknown> {
+	const prototype = Object.getPrototypeOf(value);
+	if (prototype !== Object.prototype && prototype !== null) {
+		throw new TypeError("canonical JSON must contain plain objects");
+	}
+	const names = Object.getOwnPropertyNames(value);
+	if (Object.getOwnPropertySymbols(value).length > 0 || Object.keys(value).length !== names.length) {
+		throw new TypeError("canonical JSON object contains unsupported properties");
+	}
+	const entries = names
+		.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
+		.flatMap((key) => {
+			const descriptor = Object.getOwnPropertyDescriptor(value, key);
+			if (descriptor === undefined || "get" in descriptor || "set" in descriptor) {
+				throw new TypeError("canonical JSON must not contain accessors");
+			}
+			if (omitUndefinedObjectProperties && descriptor.value === undefined) return [];
+			return [[key, sortJson(descriptor.value, depth + 1, ancestors, omitUndefinedObjectProperties)] as const];
+		});
+	return Object.fromEntries(entries);
+}
+
+function sortJson(
+	value: unknown,
+	depth = 0,
+	ancestors = new Set<object>(),
+	omitUndefinedObjectProperties = false,
+): unknown {
+	if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+	if (typeof value === "number") {
+		if (!Number.isFinite(value)) throw new TypeError("canonical JSON number must be finite");
+		return value;
+	}
+	if (typeof value !== "object") throw new TypeError("canonical JSON contains an unsupported value");
+	if (depth >= MAX_CANONICAL_JSON_DEPTH) throw new TypeError("canonical JSON exceeds the nesting bound");
+	if (ancestors.has(value)) throw new TypeError("canonical JSON contains a cycle");
+	ancestors.add(value);
+	try {
+		return Array.isArray(value)
+			? sortJsonArray(value, depth, ancestors, omitUndefinedObjectProperties)
+			: sortJsonObject(value, depth, ancestors, omitUndefinedObjectProperties);
+	} finally {
+		ancestors.delete(value);
+	}
 }
 
 function canonicalJson(value: unknown): string {
 	const encoded = JSON.stringify(sortJson(value));
 	if (encoded === undefined) throw new TypeError("value cannot be represented as canonical JSON");
 	return encoded;
+}
+
+function canonicalResultJson(value: unknown): string {
+	const encoded = JSON.stringify(sortJson(value, 0, new Set<object>(), true));
+	if (encoded === undefined) throw new TypeError("result cannot be represented as canonical JSON");
+	return encoded;
+}
+
+function cloneCanonicalArguments(value: unknown): Record<string, JsonValue> {
+	const cloned: unknown = JSON.parse(canonicalJson(value));
+	if (cloned === null || Array.isArray(cloned) || typeof cloned !== "object") {
+		throw new TypeError("tool arguments must contain a JSON object");
+	}
+	return cloned as Record<string, JsonValue>;
 }
 
 function sha256(value: string): string {
@@ -245,11 +343,28 @@ function validateIdentifier(value: string, name: string): void {
 	}
 }
 
-function compileToolPolicy(source: ToolPolicySource): CompiledToolPolicy {
+function canonicalizeFromExistingParent(value: string): string {
+	let existing = value;
+	const missingParts: string[] = [];
+	while (!existsSync(existing)) {
+		const parent = path.dirname(existing);
+		if (parent === existing) throw new TypeError(`path has no existing parent: ${value}`);
+		missingParts.unshift(path.basename(existing));
+		existing = parent;
+	}
+	return path.join(realpathSync.native(existing), ...missingParts);
+}
+
+function isContained(root: string, candidate: string): boolean {
+	const relation = path.relative(root, candidate);
+	return relation === "" || (relation !== ".." && !relation.startsWith(`..${path.sep}`) && !path.isAbsolute(relation));
+}
+
+function compileToolPolicy(source: ToolPolicySource, workingDirectory: string): CompiledToolPolicy {
 	if (source.effects.length === 0 || source.methods.length === 0) {
 		throw new TypeError("tool policy effects and methods must not be empty");
 	}
-	const pathRoots = (source.pathRoots ?? []).map((root) => path.resolve(root));
+	const pathRoots = (source.pathRoots ?? []).map((root) => realpathSync.native(path.resolve(workingDirectory, root)));
 	const endpointOrigins = new Set((source.endpointOrigins ?? []).map((origin) => new URL(origin).origin));
 	return {
 		effects: new Set(source.effects),
@@ -261,7 +376,7 @@ function compileToolPolicy(source: ToolPolicySource): CompiledToolPolicy {
 	};
 }
 
-function compilePolicy(policy: ApprovedEnforcementPolicy): CompiledPolicy {
+function compilePolicy(policy: ApprovedEnforcementPolicy, workingDirectory: string): CompiledPolicy {
 	if (policy.schemaVersion !== 1 || policy.revision.length === 0) throw new TypeError("policy metadata is invalid");
 	const { limits } = policy;
 	requirePositiveInteger(limits.maxConcurrent, "maxConcurrent");
@@ -269,6 +384,7 @@ function compilePolicy(policy: ApprovedEnforcementPolicy): CompiledPolicy {
 	requirePositiveInteger(limits.maxCallsPerMinute, "maxCallsPerMinute");
 	requirePositiveInteger(limits.maxRequestBytes, "maxRequestBytes");
 	requirePositiveInteger(limits.maxResultBytes, "maxResultBytes");
+	if (limits.maxQueueWaitMs !== undefined) requirePositiveInteger(limits.maxQueueWaitMs, "maxQueueWaitMs");
 	const expiresAt = Date.parse(policy.expiresAt);
 	if (!Number.isFinite(expiresAt)) throw new TypeError("policy expiration is invalid");
 	const { digest, ...source } = policy;
@@ -276,7 +392,7 @@ function compilePolicy(policy: ApprovedEnforcementPolicy): CompiledPolicy {
 	const tools = new Map<string, CompiledToolPolicy>();
 	for (const [name, tool] of Object.entries(policy.tools)) {
 		validateIdentifier(name, "policy tool name");
-		tools.set(name, compileToolPolicy(tool));
+		tools.set(name, compileToolPolicy(tool, workingDirectory));
 	}
 	return { source: policy, expiresAt, tools };
 }
@@ -287,16 +403,12 @@ function readArgument(request: EnforcementRequest, name: string): JsonValue {
 	return request.args[name]!;
 }
 
-function validatePathDestination(value: JsonValue, roots: readonly string[]): void {
+function validatePathDestination(value: JsonValue, roots: readonly string[], workingDirectory: string): string {
 	if (typeof value !== "string") throw new PolicyViolation("invalid_destination", "path destination must be a string");
-	const destination = path.resolve(value);
-	const allowed = roots.some((root) => {
-		const relation = path.relative(root, destination);
-		return (
-			relation === "" || (relation !== ".." && !relation.startsWith(`..${path.sep}`) && !path.isAbsolute(relation))
-		);
-	});
+	const destination = canonicalizeFromExistingParent(path.resolve(workingDirectory, value));
+	const allowed = roots.some((root) => isContained(root, destination));
 	if (!allowed) throw new PolicyViolation("destination_denied", "path destination is outside approved roots");
+	return destination;
 }
 
 function validateUrlDestination(value: JsonValue, origins: ReadonlySet<string>): void {
@@ -342,7 +454,9 @@ function validateEffect(
 	toolPolicy: CompiledToolPolicy,
 	policy: ApprovedEnforcementPolicy,
 	now: number,
-): string {
+	workingDirectory: string,
+	argumentsDigest: string,
+): CheckedRequest {
 	const effect = request.effect;
 	if (effect === undefined) throw new PolicyViolation("unclassified_tool", "tool lacks a strict effect declaration");
 	if (!toolPolicy.effects.has(effect.kind) || !toolPolicy.methods.has(effect.method)) {
@@ -357,15 +471,16 @@ function validateEffect(
 			throw new PolicyViolation("executable_denied", "process executable is not approved");
 		}
 	}
+	let validatedDestination: string | undefined;
 	if (effect.destinationArgument !== undefined) {
 		const destination = readArgument(request, effect.destinationArgument);
-		if (effect.destinationType === "path") validatePathDestination(destination, toolPolicy.pathRoots);
-		else if (effect.destinationType === "url") validateUrlDestination(destination, toolPolicy.endpointOrigins);
+		if (effect.destinationType === "path") {
+			validatedDestination = validatePathDestination(destination, toolPolicy.pathRoots, workingDirectory);
+		} else if (effect.destinationType === "url") validateUrlDestination(destination, toolPolicy.endpointOrigins);
 		else throw new PolicyViolation("invalid_destination", "destination type is absent");
 	}
-	const argumentsDigest = sha256(canonicalJson(request.args));
 	if (toolPolicy.approvalRequired) validateApproval(request, argumentsDigest, policy, now);
-	return argumentsDigest;
+	return { argumentsDigest, validatedDestination };
 }
 
 export class EnforcementKernel {
@@ -374,13 +489,16 @@ export class EnforcementKernel {
 	private readonly host: SecurityHost;
 	private readonly approvals: ApprovalSource | undefined;
 	private readonly now: () => number;
-	private readonly queue: QueueEntry[] = [];
+	private readonly workingDirectory: string;
+	private readonly queue = new Map<symbol, QueueEntry>();
 	private readonly callTimes: number[] = [];
+	private callTimesHead = 0;
 	private readonly activeOperations = new Map<string, string>();
 	private activeCount = 0;
 
 	constructor(options: EnforcementKernelOptions) {
-		this.compiled = compilePolicy(options.policy);
+		this.workingDirectory = realpathSync.native(path.resolve(options.workingDirectory ?? process.cwd()));
+		this.compiled = compilePolicy(options.policy, this.workingDirectory);
 		this.audit = options.audit;
 		this.host = options.host;
 		this.approvals = options.approvals;
@@ -402,17 +520,35 @@ export class EnforcementKernel {
 	): Promise<TResult> {
 		let release: (() => void) | undefined;
 		let resolvedRequest = request;
+		let claimedOperation = false;
 		try {
 			if (request.approval === undefined && this.approvals !== undefined) {
 				const approval = await this.approvals.resolve(request, context);
 				if (approval !== undefined) resolvedRequest = { ...request, approval };
 			}
-			const checked = this.checkRequest(resolvedRequest);
-			release = await this.acquire();
+			try {
+				resolvedRequest = { ...resolvedRequest, args: cloneCanonicalArguments(resolvedRequest.args) };
+			} catch (error) {
+				if (error instanceof TypeError) {
+					throw new PolicyViolation("invalid_arguments", "tool arguments are not bounded canonical JSON");
+				}
+				throw error;
+			}
+			const checked = this.checkRequest(resolvedRequest, true);
 			this.claimOperation(resolvedRequest);
-			const intent = this.createEvent(resolvedRequest, checked.argumentsDigest, "intent", "allow", "admitted");
+			claimedOperation = true;
+			release = await this.acquire(context);
+			const admitted = this.checkRequest(resolvedRequest, false);
+			if (admitted.argumentsDigest !== checked.argumentsDigest) {
+				throw new PolicyViolation("arguments_changed", "tool arguments changed while awaiting admission");
+			}
+			const intent = this.createEvent(resolvedRequest, admitted.argumentsDigest, "intent", "allow", "admitted");
 			const receipt = await this.persistIntent(intent, resolvedRequest.approval, context);
-			const brokerRequest = this.brokerRequest(resolvedRequest, checked.argumentsDigest);
+			const execution = this.checkRequest(resolvedRequest, false);
+			if (execution.argumentsDigest !== admitted.argumentsDigest) {
+				throw new PolicyViolation("arguments_changed", "tool arguments changed before execution");
+			}
+			const brokerRequest = this.brokerRequest(resolvedRequest, execution);
 			let result: TResult;
 			try {
 				result =
@@ -423,13 +559,13 @@ export class EnforcementKernel {
 			} catch (error) {
 				const failureCode = error instanceof EnforcementDenied ? error.code : "effect_failed";
 				await this.persist(
-					this.createEvent(resolvedRequest, checked.argumentsDigest, "failure", "deny", failureCode),
+					this.createEvent(resolvedRequest, admitted.argumentsDigest, "failure", "deny", failureCode),
 					context,
 				);
 				throw error;
 			}
 			await this.persist(
-				this.createEvent(resolvedRequest, checked.argumentsDigest, "completion", "allow", "completed"),
+				this.createEvent(resolvedRequest, admitted.argumentsDigest, "completion", "allow", "completed"),
 				context,
 			);
 			return result;
@@ -437,54 +573,108 @@ export class EnforcementKernel {
 			if (error instanceof PolicyViolation) return this.deny(resolvedRequest, error, context);
 			throw error;
 		} finally {
-			this.activeOperations.delete(`${resolvedRequest.operationId}\u0000${resolvedRequest.callId}`);
+			if (claimedOperation) {
+				this.activeOperations.delete(`${resolvedRequest.operationId}\u0000${resolvedRequest.callId}`);
+			}
 			release?.();
 		}
 	}
 
-	private checkRequest(request: EnforcementRequest): { argumentsDigest: string } {
+	private checkRequest(request: EnforcementRequest, recordRate: boolean): CheckedRequest {
 		validateIdentifier(request.operationId, "operation identifier");
 		validateIdentifier(request.callId, "call identifier");
 		validateIdentifier(request.toolName, "tool name");
 		const now = this.now();
 		if (now >= this.compiled.expiresAt) throw new PolicyViolation("policy_expired", "approved policy is stale");
-		const requestBytes = Buffer.byteLength(canonicalJson(request.args), "utf8");
+		let encodedArguments: string;
+		try {
+			encodedArguments = canonicalJson(request.args);
+		} catch (error) {
+			if (error instanceof TypeError) {
+				throw new PolicyViolation("invalid_arguments", "tool arguments are not bounded canonical JSON");
+			}
+			throw error;
+		}
+		const requestBytes = Buffer.byteLength(encodedArguments, "utf8");
 		if (requestBytes > this.compiled.source.limits.maxRequestBytes) {
 			throw new PolicyViolation("request_too_large", "tool arguments exceed the approved byte bound");
 		}
 		const toolPolicy = this.compiled.tools.get(request.toolName);
 		if (toolPolicy === undefined) throw new PolicyViolation("tool_denied", "tool is absent from the approved policy");
-		this.checkRate(now);
-		return { argumentsDigest: validateEffect(request, toolPolicy, this.compiled.source, now) };
+		if (recordRate) this.checkRate(now);
+		return validateEffect(
+			request,
+			toolPolicy,
+			this.compiled.source,
+			now,
+			this.workingDirectory,
+			sha256(encodedArguments),
+		);
 	}
 
 	private checkRate(now: number): void {
-		const windowStart = now - 60_000;
-		while (this.callTimes.length > 0 && this.callTimes[0]! <= windowStart) this.callTimes.shift();
-		if (this.callTimes.length >= this.compiled.source.limits.maxCallsPerMinute) {
+		const windowStart = now - CALL_RATE_WINDOW_MS;
+		while (this.callTimesHead < this.callTimes.length && this.callTimes[this.callTimesHead]! <= windowStart) {
+			this.callTimesHead += 1;
+		}
+		const activeCallCount = this.callTimes.length - this.callTimesHead;
+		if (activeCallCount >= this.compiled.source.limits.maxCallsPerMinute) {
 			throw new PolicyViolation("rate_limited", "tool call rate exceeds the approved bound");
 		}
 		this.callTimes.push(now);
+		if (
+			this.callTimesHead >= CALL_TIME_COMPACTION_THRESHOLD &&
+			this.callTimesHead >= this.callTimes.length - this.callTimesHead
+		) {
+			this.callTimes.splice(0, this.callTimesHead);
+			this.callTimesHead = 0;
+		}
 	}
 
-	private acquire(): Promise<() => void> {
+	private acquire(context: Context): Promise<() => void> {
+		context.abortSignal?.throwIfAborted();
 		if (this.activeCount < this.compiled.source.limits.maxConcurrent) {
 			this.activeCount += 1;
 			return Promise.resolve(() => this.release());
 		}
-		if (this.queue.length >= this.compiled.source.limits.maxQueued) {
+		if (this.queue.size >= this.compiled.source.limits.maxQueued) {
 			throw new PolicyViolation("queue_full", "tool queue exceeds the approved bound");
 		}
-		return new Promise((resolve, reject) => this.queue.push({ resolve, reject }));
+		const key = Symbol("queued enforcement call");
+		return new Promise((resolve, reject) => {
+			const finish = (error: Error): void => {
+				const entry = this.queue.get(key);
+				if (entry === undefined) return;
+				this.removeQueueEntry(entry);
+				reject(error);
+			};
+			const abort = (): void => {
+				const reason = context.abortSignal?.reason;
+				finish(reason instanceof Error ? reason : new Error("tool call aborted while queued"));
+			};
+			const timer = setTimeout(() => {
+				finish(new PolicyViolation("queue_timeout", "tool call exceeded the approved queue wait"));
+			}, this.compiled.source.limits.maxQueueWaitMs ?? DEFAULT_MAX_QUEUE_WAIT_MS);
+			const entry: QueueEntry = { key, resolve, reject, signal: context.abortSignal, abort, timer };
+			this.queue.set(key, entry);
+			context.abortSignal?.addEventListener("abort", abort, { once: true });
+		});
 	}
 
 	private release(): void {
-		const next = this.queue.shift();
+		const next = this.queue.values().next().value as QueueEntry | undefined;
 		if (next !== undefined) {
+			this.removeQueueEntry(next);
 			next.resolve(() => this.release());
 			return;
 		}
 		this.activeCount -= 1;
+	}
+
+	private removeQueueEntry(entry: QueueEntry): void {
+		this.queue.delete(entry.key);
+		clearTimeout(entry.timer);
+		entry.signal?.removeEventListener("abort", entry.abort);
 	}
 
 	private claimOperation(request: EnforcementRequest): void {
@@ -493,17 +683,24 @@ export class EnforcementKernel {
 		this.activeOperations.set(key, request.toolName);
 	}
 
-	private brokerRequest(request: EnforcementRequest, argumentsDigest: string): BrokerRequest {
+	private brokerRequest(request: EnforcementRequest, checked: CheckedRequest): BrokerRequest {
+		let args = request.args;
+		const destinationArgument = request.effect?.destinationArgument;
+		if (checked.validatedDestination !== undefined && destinationArgument !== undefined) {
+			args = { ...request.args, [destinationArgument]: checked.validatedDestination };
+		}
 		return {
 			...request,
-			argumentsDigest,
+			args,
+			argumentsDigest: checked.argumentsDigest,
 			policyDigest: this.compiled.source.digest,
 			policyRevision: this.compiled.source.revision,
+			...(checked.validatedDestination === undefined ? {} : { validatedDestination: checked.validatedDestination }),
 		};
 	}
 
 	private checkResultSize(result: unknown): void {
-		const bytes = Buffer.byteLength(canonicalJson(result), "utf8");
+		const bytes = Buffer.byteLength(canonicalResultJson(result), "utf8");
 		if (bytes > this.compiled.source.limits.maxResultBytes) {
 			throw new EnforcementDenied("result_too_large", "tool result exceeds the approved byte bound");
 		}
@@ -560,7 +757,9 @@ export class EnforcementKernel {
 		let argumentsDigest = "unavailable";
 		try {
 			argumentsDigest = sha256(canonicalJson(request.args));
-		} catch {}
+		} catch (error) {
+			if (!(error instanceof TypeError)) throw error;
+		}
 		const event = this.createEvent(request, argumentsDigest, "denial", "deny", violation.code);
 		try {
 			await this.audit.append(event, undefined, context);

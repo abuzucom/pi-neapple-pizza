@@ -51,7 +51,7 @@ function buildPolicy(): EnforcementPolicySource {
 			maxResultBytes: 4_096,
 		},
 		tools: {
-			read: { effects: ["filesystem"], methods: ["read"], pathRoots: ["C:/workspace"] },
+			read: { effects: ["filesystem"], methods: ["read"], pathRoots: [process.cwd()] },
 			process: { effects: ["process"], methods: ["run"], executables: ["git"] },
 			pure: { effects: ["pure"], methods: ["calculate"] },
 		},
@@ -127,7 +127,7 @@ describe("strict harness enforcement", () => {
 				operationId: "operation-3",
 				callId: "call-3",
 				toolName: "read",
-				args: { path: "C:/workspace/README.md" },
+				args: { path: "README.md" },
 				effect: effect({
 					kind: "filesystem",
 					method: "read",

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.21] (2026-10-02)
+
+### Security
+
+- Isolate import preparation, donor validation, and publication credentials.
+- Bind publication to an immutable SHA-256 candidate bundle.
+- Enforce queue ownership, bounded waits, and canonical filesystem paths.
+- Reject cyclic or deeply nested arguments before digest and broker use.
+- Reject non-JSON arguments and recheck freshness after intent persistence.
+- Restrict OAuth discovery to exact trusted origins and bounded redirects.
+- Reject unbounded donor blobs and Python module shadowing under `scripts/`.
+- Validate candidate files, linked parents, workspace routing, and GitHub calls.
+- Bound patch capture and restrict draft publication to fixed repository paths.
+- Pin `brace-expansion` 5.0.12 across release locks.
+
+### Added
+
+- Run blocking Linux harness and importer security suites in pull requests.
+
 ## [0.2.20] (2026-10-01)
 
 ### Fixed
