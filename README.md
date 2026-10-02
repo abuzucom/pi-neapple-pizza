@@ -60,6 +60,16 @@ Preview generation uses four workers and an eight-item submission bound.
 The coordinator restores normalized path order before digest calculation.
 Apply mode accepts a full commit SHA and exact reviewed digests.
 The protected `upstream-import` environment gates repository writes.
+Preparation creates an immutable binary patch and SHA-256 manifest.
+Validation runs without secrets or repository write permission.
+Publication recomputes the bundle and approval digests from trusted code.
+Every checkout binds to the manual dispatch SHA and disables persisted credentials.
+Candidate checks reject linked parents, links, unsafe entries, and size overflow.
+Candidate patch capture enforces its byte limit while streaming.
+Workflow helpers route Git and GitHub calls through the candidate workspace.
+Trusted GitHub workflow mode accepts exact read and draft creation shapes.
+Publication requires the fixed origin and fixed report body path.
+Apply validation records dependency installation as report-only evidence.
 Apply mode creates a dated feature branch and a draft pull request.
 Apply mode creates no labels and performs no merge.
 
