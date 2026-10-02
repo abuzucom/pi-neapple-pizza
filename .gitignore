@@ -222,3 +222,26 @@ __marimo__/
 .gate-adoption-*/
 .test-temp/
 __pycache__/
+
+# Imported pi build and generated state.
+node_modules/
+.artifacts/
+*.tsbuildinfo
+packages/*/node_modules/
+packages/*/dist/
+packages/*/dist-chrome/
+packages/*/dist-firefox/
+packages/ai/src/providers/data/
+packages/ai/src/providers/.model-generation-*/
+packages/coding-agent/binaries/
+.npm/
+coverage/
+.nyc_output/
+compaction-results/
+.opencode/
+syntax.jsonl
+out.jsonl
+pi-*.html
+out.html
+*.cpuprofile
+.DS_Store

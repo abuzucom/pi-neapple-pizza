@@ -3,7 +3,7 @@
   "shared": {
     "hooks/_bash_parser.py": "082d48b1565f28f13a954efd123471266d4a3bfaecbbc58fd078d304e339961d",
     "hooks/_cmd_parser.py": "4212670bc4166a5f89be120ceb6bafbc854d16743ff900f4b596b7b79fa5981b",
-    "hooks/_gate_core.py": "6be59dd094c39324849cbb329d838d831dfb166750754fde18f7b52ca8e99044",
+    "hooks/_gate_core.py": "5f02359cfa6403d2a0f34dde71d2f403ee55e8d12ed1f1e62a36be7321731a91",
     "hooks/_platform_policy.py": "9cfbbee6b9a6e9e90d7d8faee8df61cf5d43ee6aa488f1e6aa563499d0d44dd9",
     "hooks/block_destructive_bash.py": "f4c5884e64dcee4643eea20e5263b8a244654cbcefb12ca3b2742b83cfa14626",
     "hooks/block_destructive_cmd.py": "7740e565354e175db1031690a9fb021db01c4ac8205f1c83cfa045e99e2a27d5",
@@ -19,7 +19,7 @@
     "tests/gate_corpus.py": "cdd1a64831a8001fabc592df45f9c80ef2705c963cae31e20e75eb67dc44000a",
     "tests/json_line_worker.py": "57cbf9ed4c57506201e9c9e4ae57d6b8a330d5ede2f8fb76f0c4f72dae55fc0b",
     "tests/json_line_worker_child.py": "bad155acd0f37cf37e0ed12ac6c35755a27b987a541977c48d52076912d0e83c",
-    "tests/test_block_destructive_bash.py": "18c508824bc1f10142231191f41eaa44602e8ad821b4e3ed248c0b4c61524fa8",
+    "tests/test_block_destructive_bash.py": "d4d4441570510405de0fcbe18e5a164aaeebd90a977b5adfc7f4aee4a664e9d1",
     "tests/test_block_destructive_cmd.py": "80d8a3039dd5a9cfba4c2ffa38560b10be43a7ae976cadbed28ca9cef344798f",
     "tests/test_block_destructive_powershell.py": "b5c01603e5d78b4e78710772e4f6e8ff5ff33a529f2030044d282fec0b32e6ce",
     "tests/test_check_gate_adoption.py": "fa8fb93b8a0d06e36f93137c9f559c93a4ee9cd2b13e0ca9e2939255951c49c2",

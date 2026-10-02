@@ -3,6 +3,7 @@
 import collections
 import os
 import sys
+import tempfile
 import time
 import unittest
 
@@ -119,13 +120,16 @@ def run_suite(root: str, *, workers: int, timeout: float) -> int:
     """Run validated class shards and return a process exit code."""
     try:
         shards = validated_test_shards(root)
-        problems = shard_runner.run_test_shards(
-            root,
-            dict(os.environ),
-            workers=workers,
-            timeout=timeout,
-            test_shards=shards,
-        )
+        with tempfile.TemporaryDirectory(prefix="test-project-") as clean_project:
+            environment = dict(os.environ)
+            environment[shard_runner.CLEAN_PROJECT_ENVIRONMENT] = clean_project
+            problems = shard_runner.run_test_shards(
+                root,
+                environment,
+                workers=workers,
+                timeout=timeout,
+                test_shards=shards,
+            )
     except (ImportError, OSError, RuntimeError, ValueError) as error:
         diagnostic = _safe_diagnostic(f"{type(error).__name__}: {error}")
         print(diagnostic, file=sys.stderr)

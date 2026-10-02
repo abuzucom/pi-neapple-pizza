@@ -1,0 +1,181 @@
+name: Import pi upstream
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview or apply the import
+        required: true
+        type: choice
+        options:
+          - preview
+          - apply
+      source_ref:
+        description: Donor branch, tag, or full commit SHA
+        required: true
+        type: string
+      import_approval_digest:
+        description: Exact preview import digest for apply mode
+        required: false
+        type: string
+      dependency_approval_digest:
+        description: Exact dependency digest when dependencies change
+        required: false
+        type: string
+      test_change_approval_digest:
+        description: Exact test digest when existing tests change
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: inputs.mode == 'preview'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Reject dispatch outside main
+        if: github.ref != 'refs/heads/main'
+        run: exit 1
+      - name: Check out trusted dispatch revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Preview bounded import
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+        run: python tools/pi_import_workflow.py preview --report-directory .artifacts/pi-import
+      - name: Upload preview reports
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-preview
+          path: .artifacts/pi-import
+          if-no-files-found: error
+
+  prepare-apply:
+    if: inputs.mode == 'apply'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Reject dispatch outside main
+        if: github.ref != 'refs/heads/main'
+        run: exit 1
+      - name: Check out trusted dispatch revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Prepare immutable candidate bundle
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          IMPORT_APPROVAL_DIGEST: ${{ inputs.import_approval_digest }}
+          DEPENDENCY_APPROVAL_DIGEST: ${{ inputs.dependency_approval_digest }}
+          TEST_CHANGE_APPROVAL_DIGEST: ${{ inputs.test_change_approval_digest }}
+        run: >-
+          python tools/pi_import_workflow.py prepare-apply
+          --report-directory "${{ runner.temp }}/pi-import-report"
+          --bundle-directory "${{ runner.temp }}/pi-import-candidate"
+      - name: Verify candidate policy boundaries
+        run: >-
+          python tools/pi_import_workflow.py check-candidate
+          --report-directory "${{ runner.temp }}/pi-import-report"
+          --bundle-directory "${{ runner.temp }}/pi-import-candidate"
+      - name: Upload immutable candidate bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-candidate
+          path: ${{ runner.temp }}/pi-import-candidate
+          if-no-files-found: error
+
+  validate-apply:
+    if: inputs.mode == 'apply' && github.ref == 'refs/heads/main'
+    needs: prepare-apply
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out trusted dispatch revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Download immutable candidate bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pi-import-candidate
+          path: ${{ runner.temp }}/pi-import-candidate
+      - name: Apply immutable candidate bundle
+        run: >-
+          python tools/pi_import_workflow.py validate-apply
+          --report-directory "${{ runner.temp }}/pi-import-validation"
+          --bundle-directory "${{ runner.temp }}/pi-import-candidate"
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.20.0
+          cache: npm
+      - name: Record full product validation
+        run: >-
+          python tools/run_pi_product_validation.py
+          --output "${{ runner.temp }}/pi-import-validation/product-validation.json"
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-validation
+          path: ${{ runner.temp }}/pi-import-validation
+          if-no-files-found: error
+
+  publish-apply:
+    if: inputs.mode == 'apply' && github.ref == 'refs/heads/main'
+    needs:
+      - prepare-apply
+      - validate-apply
+    runs-on: ubuntu-latest
+    environment: upstream-import
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out trusted dispatch revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Download immutable candidate bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pi-import-candidate
+          path: ${{ runner.temp }}/pi-import-candidate
+      - name: Download validation evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: pi-import-validation
+          path: ${{ runner.temp }}/pi-import-validation
+      - name: Reverify candidate and publish draft pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMPORT_APPROVAL_DIGEST: ${{ inputs.import_approval_digest }}
+          DEPENDENCY_APPROVAL_DIGEST: ${{ inputs.dependency_approval_digest }}
+          TEST_CHANGE_APPROVAL_DIGEST: ${{ inputs.test_change_approval_digest }}
+        run: >-
+          python tools/pi_import_workflow.py publish-apply
+          --report-directory "${{ runner.temp }}/pi-import-publication"
+          --bundle-directory "${{ runner.temp }}/pi-import-candidate"
+          --validation-directory "${{ runner.temp }}/pi-import-validation"
+      - name: Upload publication reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pi-import-publication
+          path: ${{ runner.temp }}/pi-import-publication
+          if-no-files-found: error
