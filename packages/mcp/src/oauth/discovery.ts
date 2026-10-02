@@ -16,6 +16,15 @@ import {
 	parseProtectedResourceMetadata,
 } from "./types.ts";
 
+const MAX_DISCOVERY_REDIRECTS = 3;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+export interface OAuthDiscoveryOptions {
+	readonly trustedDiscoveryOrigins?: readonly string[];
+}
+
+class OAuthDiscoverySecurityError extends Error {}
+
 function discard(response: Response | undefined): void {
 	void response?.body?.cancel().catch(() => {});
 }
@@ -54,29 +63,105 @@ export function parseWwwAuthenticate(header: string | null): OAuthChallenge {
 	};
 }
 
-async function fetchMetadata(url: URL, fetch: McpFetch, protocolVersion: string): Promise<Response> {
-	return fetch(url, {
-		headers: { Accept: "application/json", "MCP-Protocol-Version": protocolVersion },
-	});
+function trustedOrigins(serverUrl: string | URL, configured: readonly string[] = []): ReadonlySet<string> {
+	const values = [new URL(serverUrl).origin, ...configured];
+	return new Set(
+		values.map((value) => {
+			const url = new URL(value);
+			if (url.username || url.password) {
+				throw new OAuthDiscoverySecurityError("OAuth discovery origin must not contain credentials");
+			}
+			return url.origin;
+		}),
+	);
+}
+
+function validateDiscoveryUrl(value: string | URL, origins: ReadonlySet<string>): URL {
+	const url = new URL(value);
+	if (url.username || url.password) {
+		throw new OAuthDiscoverySecurityError("OAuth discovery URL must not contain credentials");
+	}
+	if (!origins.has(url.origin)) {
+		throw new OAuthDiscoverySecurityError(`OAuth discovery origin is not trusted: ${url.origin}`);
+	}
+	return url;
+}
+
+function validateMetadataEndpoints(metadata: AuthorizationServerMetadata, origins: ReadonlySet<string>): void {
+	validateDiscoveryUrl(metadata.issuer, origins);
+	validateDiscoveryUrl(metadata.authorization_endpoint, origins);
+	validateDiscoveryUrl(metadata.token_endpoint, origins);
+	if (metadata.registration_endpoint !== undefined) validateDiscoveryUrl(metadata.registration_endpoint, origins);
+}
+
+/** Revalidate cached OAuth discovery data against the current server trust boundary. */
+export function validateOAuthServerInfo(
+	serverUrl: string | URL,
+	info: OAuthServerInfo,
+	configured: readonly string[] = [],
+): void {
+	const origins = trustedOrigins(serverUrl, configured);
+	validateDiscoveryUrl(info.authorizationServerUrl, origins);
+	if (info.authorizationServerMetadata !== undefined) {
+		validateMetadataEndpoints(info.authorizationServerMetadata, origins);
+	}
+	if (info.resourceMetadata?.authorization_servers !== undefined) {
+		for (const value of info.resourceMetadata.authorization_servers) validateDiscoveryUrl(value, origins);
+	}
+}
+
+async function fetchMetadata(
+	initialUrl: URL,
+	fetch: McpFetch,
+	protocolVersion: string,
+	origins: ReadonlySet<string>,
+): Promise<Response> {
+	let url = validateDiscoveryUrl(initialUrl, origins);
+	for (let redirects = 0; ; redirects += 1) {
+		const response = await fetch(url, {
+			redirect: "manual",
+			headers: { Accept: "application/json", "MCP-Protocol-Version": protocolVersion },
+		});
+		if (!REDIRECT_STATUSES.has(response.status)) return response;
+		if (redirects >= MAX_DISCOVERY_REDIRECTS) {
+			discard(response);
+			throw new OAuthDiscoverySecurityError("OAuth discovery exceeded its redirect bound");
+		}
+		const location = response.headers.get("location");
+		if (location === null) return response;
+		discard(response);
+		url = validateDiscoveryUrl(new URL(location, url), origins);
+	}
 }
 
 export async function discoverProtectedResourceMetadata(
 	serverUrl: string | URL,
-	options: { resourceMetadataUrl?: string | URL; protocolVersion?: string; fetch?: McpFetch } = {},
+	options: OAuthDiscoveryOptions & {
+		resourceMetadataUrl?: string | URL;
+		protocolVersion?: string;
+		fetch?: McpFetch;
+	} = {},
 ): Promise<OAuthProtectedResourceMetadata> {
 	const server = new URL(serverUrl);
 	const fetch = options.fetch ?? globalThis.fetch;
 	const version = options.protocolVersion ?? LATEST_PROTOCOL_VERSION;
+	const origins = trustedOrigins(server, options.trustedDiscoveryOrigins);
 	let response = await fetchMetadata(
 		options.resourceMetadataUrl
 			? new URL(options.resourceMetadataUrl)
 			: new URL(`/.well-known/oauth-protected-resource${pathSuffix(server.pathname)}`, server.origin),
 		fetch,
 		version,
+		origins,
 	);
 	if (!options.resourceMetadataUrl && server.pathname !== "/" && isDiscoveryMiss(response.status)) {
 		discard(response);
-		response = await fetchMetadata(new URL("/.well-known/oauth-protected-resource", server.origin), fetch, version);
+		response = await fetchMetadata(
+			new URL("/.well-known/oauth-protected-resource", server.origin),
+			fetch,
+			version,
+			origins,
+		);
 	}
 	if (!response.ok) {
 		discard(response);
@@ -100,11 +185,16 @@ export function buildAuthorizationServerDiscoveryUrls(
 
 export async function discoverAuthorizationServerMetadata(
 	authorizationServerUrl: string | URL,
-	options: { fetch?: McpFetch; protocolVersion?: string; skipIssuerValidation?: boolean } = {},
+	options: OAuthDiscoveryOptions & {
+		fetch?: McpFetch;
+		protocolVersion?: string;
+		skipIssuerValidation?: boolean;
+	} = {},
 ): Promise<AuthorizationServerMetadata | undefined> {
 	const fetch = options.fetch ?? globalThis.fetch;
+	const origins = trustedOrigins(authorizationServerUrl, options.trustedDiscoveryOrigins);
 	for (const { url } of buildAuthorizationServerDiscoveryUrls(authorizationServerUrl)) {
-		const response = await fetchMetadata(url, fetch, options.protocolVersion ?? LATEST_PROTOCOL_VERSION);
+		const response = await fetchMetadata(url, fetch, options.protocolVersion ?? LATEST_PROTOCOL_VERSION, origins);
 		if (!response.ok) {
 			discard(response);
 			if (isDiscoveryMiss(response.status)) continue;
@@ -117,6 +207,7 @@ export async function discoverAuthorizationServerMetadata(
 			const trim = (value: string) => (value.endsWith("/") ? value.slice(0, -1) : value);
 			if (trim(metadata.issuer) !== trim(expected)) throw new OAuthIssuerMismatchError(expected, metadata.issuer);
 		}
+		validateMetadataEndpoints(metadata, origins);
 		return metadata;
 	}
 	return undefined;
@@ -128,26 +219,33 @@ export async function discoverOAuthServerInfo(
 		resourceMetadataUrl?: URL;
 		fetch?: McpFetch;
 		skipIssuerValidation?: boolean;
+		trustedDiscoveryOrigins?: readonly string[];
 	} = {},
 ): Promise<OAuthServerInfo> {
+	const origins = trustedOrigins(serverUrl, options.trustedDiscoveryOrigins);
 	let resourceMetadata: OAuthProtectedResourceMetadata | undefined;
 	try {
 		resourceMetadata = await discoverProtectedResourceMetadata(serverUrl, {
 			resourceMetadataUrl: options.resourceMetadataUrl,
 			fetch: options.fetch,
+			trustedDiscoveryOrigins: [...origins],
 		});
 	} catch (error) {
-		if (error instanceof TypeError) throw error;
+		if (error instanceof TypeError || error instanceof OAuthDiscoverySecurityError) throw error;
 	}
 	const authorizationServerUrl = resourceMetadata?.authorization_servers?.[0] ?? String(new URL("/", serverUrl));
-	return {
+	validateDiscoveryUrl(authorizationServerUrl, origins);
+	const info: OAuthServerInfo = {
 		authorizationServerUrl,
 		authorizationServerMetadata: await discoverAuthorizationServerMetadata(authorizationServerUrl, {
 			fetch: options.fetch,
 			skipIssuerValidation: options.skipIssuerValidation,
+			trustedDiscoveryOrigins: [...origins],
 		}),
 		resourceMetadata,
 	};
+	validateOAuthServerInfo(serverUrl, info, options.trustedDiscoveryOrigins);
+	return info;
 }
 
 export function resourceUrlFromServerUrl(value: string | URL): URL {

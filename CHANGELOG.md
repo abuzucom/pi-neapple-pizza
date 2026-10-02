@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.22] (2026-10-02)
+
+### Security
+
+- Harden secure loading, OAuth discovery, and eval ownership boundaries.
+
 ## [0.2.21] (2026-10-02)
 
 ### Security

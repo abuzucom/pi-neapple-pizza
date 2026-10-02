@@ -23,6 +23,7 @@ export interface McpOAuthProviderOptions {
 	clientMetadata: Omit<OAuthClientMetadata, "redirect_uris"> & { redirect_uris?: string[] };
 	clientId?: string;
 	clientSecret?: string;
+	trustedDiscoveryOrigins?: readonly string[];
 	store?: McpOAuthStateStore;
 	onRedirect(url: URL): void | Promise<void>;
 }
@@ -43,6 +44,7 @@ export class MemoryOAuthStateStore implements McpOAuthStateStore {
 export class McpOAuthProvider implements OAuthClientProvider {
 	readonly redirectUrl: string;
 	readonly clientMetadata: OAuthClientMetadata;
+	readonly trustedDiscoveryOrigins: readonly string[] | undefined;
 	private serverUrl: string;
 	private configuredClient: OAuthClientInformationMixed | undefined;
 	private store: McpOAuthStateStore;
@@ -52,6 +54,7 @@ export class McpOAuthProvider implements OAuthClientProvider {
 	constructor(options: McpOAuthProviderOptions) {
 		this.serverUrl = String(new URL(options.serverUrl));
 		this.redirectUrl = String(options.redirectUrl);
+		this.trustedDiscoveryOrigins = options.trustedDiscoveryOrigins;
 		this.clientMetadata = {
 			...options.clientMetadata,
 			redirect_uris: options.clientMetadata.redirect_uris ?? [this.redirectUrl],

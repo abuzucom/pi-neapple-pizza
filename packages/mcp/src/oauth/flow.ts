@@ -11,6 +11,7 @@ import {
 	discoverOAuthServerInfo,
 	parseWwwAuthenticate,
 	selectResource,
+	validateOAuthServerInfo,
 } from "./discovery.ts";
 import {
 	McpOAuthAuthorizationRequiredError,
@@ -41,6 +42,7 @@ export interface OAuthClientProvider {
 	readonly redirectUrl: string | URL;
 	readonly clientMetadata: OAuthClientMetadata;
 	readonly clientMetadataUrl?: string;
+	readonly trustedDiscoveryOrigins?: readonly string[];
 	state?(): string | Promise<string>;
 	clientInformation(): OAuthClientInformationMixed | undefined | Promise<OAuthClientInformationMixed | undefined>;
 	saveClientInformation?(information: OAuthClientInformationMixed): void | Promise<void>;
@@ -62,6 +64,7 @@ export interface OAuthFlowOptions {
 	resourceMetadataUrl?: URL;
 	fetch?: McpFetch;
 	skipIssuerValidation?: boolean;
+	trustedDiscoveryOrigins?: readonly string[];
 	/**
 	 * Go straight to the authorization redirect instead of refreshing stored tokens, for example when the
 	 * server asks for scopes the current grant lacks (a refresh keeps the old scope).
@@ -255,24 +258,42 @@ export async function refreshAuthorization(
 	return { refresh_token: options.refreshToken, ...tokens };
 }
 
-async function runFlow(provider: OAuthClientProvider, options: OAuthFlowOptions): Promise<OAuthFlowResult> {
+async function resolveDiscovery(
+	provider: OAuthClientProvider,
+	options: OAuthFlowOptions,
+): Promise<{
+	authorizationServerUrl: string;
+	authorizationServerMetadata?: AuthorizationServerMetadata;
+	resourceMetadata?: import("./types.ts").OAuthProtectedResourceMetadata;
+}> {
 	const cached = await provider.discoveryState?.();
-	const discovered = cached?.authorizationServerUrl
-		? {
-				authorizationServerUrl: cached.authorizationServerUrl,
-				authorizationServerMetadata:
-					cached.authorizationServerMetadata ??
-					(await discoverAuthorizationServerMetadata(cached.authorizationServerUrl, {
-						fetch: options.fetch,
-						skipIssuerValidation: options.skipIssuerValidation,
-					})),
-				resourceMetadata: cached.resourceMetadata,
-			}
-		: await discoverOAuthServerInfo(options.serverUrl, {
-				resourceMetadataUrl: options.resourceMetadataUrl,
-				fetch: options.fetch,
-				skipIssuerValidation: options.skipIssuerValidation,
-			});
+	if (cached?.authorizationServerUrl) {
+		validateOAuthServerInfo(options.serverUrl, cached, options.trustedDiscoveryOrigins);
+		const discovered = {
+			authorizationServerUrl: cached.authorizationServerUrl,
+			authorizationServerMetadata:
+				cached.authorizationServerMetadata ??
+				(await discoverAuthorizationServerMetadata(cached.authorizationServerUrl, {
+					fetch: options.fetch,
+					skipIssuerValidation: options.skipIssuerValidation,
+					trustedDiscoveryOrigins: options.trustedDiscoveryOrigins,
+				})),
+			resourceMetadata: cached.resourceMetadata,
+		};
+		validateOAuthServerInfo(options.serverUrl, discovered, options.trustedDiscoveryOrigins);
+		return discovered;
+	}
+	return discoverOAuthServerInfo(options.serverUrl, {
+		resourceMetadataUrl: options.resourceMetadataUrl,
+		fetch: options.fetch,
+		skipIssuerValidation: options.skipIssuerValidation,
+		trustedDiscoveryOrigins: options.trustedDiscoveryOrigins,
+	});
+}
+
+async function runFlow(provider: OAuthClientProvider, options: OAuthFlowOptions): Promise<OAuthFlowResult> {
+	const discovered = await resolveDiscovery(provider, options);
+	validateOAuthServerInfo(options.serverUrl, discovered, options.trustedDiscoveryOrigins);
 	await provider.saveDiscoveryState?.({
 		...discovered,
 		...(options.resourceMetadataUrl ? { resourceMetadataUrl: options.resourceMetadataUrl.href } : {}),
@@ -384,6 +405,7 @@ export function adaptOAuthProvider(provider: OAuthClientProvider): AuthProvider 
 				scope: challenge.scope,
 				fetch: context.fetch,
 				skipRefresh: insufficientScope,
+				trustedDiscoveryOrigins: provider.trustedDiscoveryOrigins,
 			})
 				.then((result) => {
 					if (result === "REDIRECT") throw new McpOAuthAuthorizationRequiredError();

@@ -1,8 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { chownSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { setTreeOwnership } from "./ownership.ts";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const variant = process.env.PI_EVAL_VARIANT;
@@ -62,14 +63,6 @@ function assertWorkspace(): void {
 	}
 }
 
-function chownTree(path: string, uid: number, gid: number): void {
-	const stats = lstatSync(path);
-	if (stats.isDirectory() && !stats.isSymbolicLink()) {
-		for (const entry of readdirSync(path)) chownTree(join(path, entry), uid, gid);
-	}
-	chownSync(path, uid, gid);
-}
-
 function assertRootOnly(path: string): void {
 	const stats = statSync(path);
 	if (stats.uid !== 0 || (stats.mode & 0o077) !== 0) {
@@ -108,8 +101,8 @@ const agentDir = "/tmp/pi-eval-host-agent";
 mkdirSync(agentDir, { recursive: true });
 const authSource = "/run/pi-eval-secrets/auth.json";
 if (existsSync(authSource)) copyFileSync(authSource, join(agentDir, "auth.json"));
-chownTree(agentDir, sandboxUid, sandboxGid);
-chownTree("/artifacts", sandboxUid, sandboxGid);
+setTreeOwnership(agentDir, sandboxUid, sandboxGid);
+setTreeOwnership("/artifacts", sandboxUid, sandboxGid);
 process.env.HOME = "/tmp/pi-eval-bootstrap";
 process.env.USERPROFILE = process.env.HOME;
 process.env.PI_CODING_AGENT_DIR = agentDir;
@@ -147,6 +140,6 @@ if (result.error) throw result.error;
 const artifactUid = process.env.PI_EVAL_ARTIFACT_UID;
 const artifactGid = process.env.PI_EVAL_ARTIFACT_GID;
 if (artifactUid !== undefined && artifactGid !== undefined) {
-	chownTree("/artifacts", parseId("PI_EVAL_ARTIFACT_UID"), parseId("PI_EVAL_ARTIFACT_GID"));
+	setTreeOwnership("/artifacts", parseId("PI_EVAL_ARTIFACT_UID"), parseId("PI_EVAL_ARTIFACT_GID"));
 }
 process.exit(result.status ?? 1);
