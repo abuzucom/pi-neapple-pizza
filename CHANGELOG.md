@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.29] (2026-10-02)
+
+### Fixed
+
+- Track the generated Bedrock catalog required by blocking offline builds.
+- Accept canonical temporary-directory aliases during trusted workflow publication.
+
 ## [0.2.28] (2026-10-02)
 
 ### Fixed

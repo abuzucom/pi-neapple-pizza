@@ -459,14 +459,16 @@ def validate_workflow_body_file(value: str) -> Path:
     if not runner_temp.is_absolute() or not candidate.is_absolute():
         raise ValueError("workflow publication report path must be absolute")
     resolved_root = runner_temp.resolve(strict=True)
-    try:
-        relative = candidate.relative_to(resolved_root)
-    except ValueError as error:
-        raise ValueError("workflow body file must use the publication report") from error
-    if relative != WORKFLOW_BODY_PATH:
+    expected = runner_temp / WORKFLOW_BODY_PATH
+    if not expected.is_file() or not candidate.is_file():
         raise ValueError("workflow body file must use the publication report")
+    try:
+        if not os.path.samefile(candidate, expected):
+            raise ValueError("workflow body file must use the publication report")
+    except OSError as error:
+        raise ValueError("workflow body file must use the publication report") from error
     current = resolved_root
-    for part in relative.parts:
+    for part in WORKFLOW_BODY_PATH.parts:
         current = current / part
         if current.is_symlink():
             raise ValueError("workflow publication report must not contain links")

@@ -183,3 +183,8 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+
+- D034 retains the generated Bedrock catalog as a tracked local runtime artifact.
+  The imported provider module requires this JSON during offline builds.
+  The catalog was hydrated on 2026-10-02 from configured model-data sources.
+  SHA-256: `79c46943dee9438f321f5f5641d7a48805673bf5eb5d65dd4991f95753ef9d62`.
