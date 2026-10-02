@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from collections import deque
 from pathlib import Path, PurePosixPath
@@ -28,9 +29,20 @@ MAX_FILE_BYTES = 52_428_800
 MAX_REPORT_BYTES = 5_242_880
 MAX_GENERATION_WORKERS = 4
 MAX_GENERATION_QUEUE = 8
+MAX_DEPENDENCY_VERSION_LENGTH = 256
 SHA_PATTERN = re.compile(r"[0-9a-f]{40}")
+SEMVER_PATTERN = re.compile(
+    r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
+    r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+)
 TEST_PATTERN = re.compile(r"(^|/)(tests?|__tests__)(/|$)|\.(test|spec)\.[^/]+$")
 DEPENDENCY_SECTIONS = ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies", "overrides")
+APPROVED_OVERRIDES = {
+    "brace-expansion": "5.0.12",
+    "protobufjs": "7.6.6",
+}
 CHECKER_REVISION = "pi-import-content-v1"
 PRIVATE_KEY_PATTERN = re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")
 TOKEN_PATTERNS = (
@@ -158,7 +170,7 @@ def validate_sha(value: str) -> str:
 
 def validate_path(value: str) -> str:
     """Validate one Git tree path before filesystem use."""
-    if "\\" in value or "\x00" in value:
+    if "\\" in value or any(ord(character) < 32 or ord(character) == 127 for character in value):
         raise ImportFailure(f"unsafe donor path: {value!r}")
     path = PurePosixPath(value)
     if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
@@ -178,6 +190,8 @@ def import_path_allowed(path: str) -> bool:
     if parts[0] == "packages":
         return True
     if parts[0] == "scripts":
+        if PurePosixPath(path).suffix.lower() == ".py":
+            raise ImportFailure(f"donor Python files under scripts are blocked: {path}")
         return True
     if parts[0] in PROTECTED_ROOTS:
         return False
@@ -185,9 +199,9 @@ def import_path_allowed(path: str) -> bool:
 
 
 def pin_manifest_version(value: str) -> str:
-    """Convert one simple moving semantic-version range to its exact version."""
-    if value.startswith(("^", "~")) and re.fullmatch(r"[~^][0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?", value):
-        return value[1:]
+    """Require one exact semantic version for a dependency declaration."""
+    if len(value) > MAX_DEPENDENCY_VERSION_LENGTH or SEMVER_PATTERN.fullmatch(value) is None:
+        raise ImportFailure(f"dependency declaration must use an exact semantic version: {value}")
     return value
 
 
@@ -209,6 +223,18 @@ def transform_manifest(path: str, content: bytes) -> bytes:
             if not isinstance(name, str) or not isinstance(version, str):
                 raise ImportFailure(f"package dependency entry must use strings: {path}:{section}")
             values[name] = pin_manifest_version(version)
+    if path in {
+        "package.json",
+        "packages/coding-agent/package.json",
+        "packages/coding-agent/install-lock/package.json",
+    }:
+        overrides = manifest.get("overrides")
+        if overrides is None:
+            overrides = {}
+            manifest["overrides"] = overrides
+        if not isinstance(overrides, dict):
+            raise ImportFailure(f"package overrides must be an object: {path}")
+        overrides.update(APPROVED_OVERRIDES)
     if path == "package.json":
         scripts = manifest.get("scripts")
         if isinstance(scripts, dict):
@@ -234,52 +260,66 @@ def transform_content(path: str, content: bytes) -> bytes:
     return content
 
 
-def read_blobs(object_ids: list[str]) -> dict[str, bytes]:
+def read_blobs(expected_sizes: dict[str, int]) -> dict[str, bytes]:
     """Read validated Git blobs through one bounded batch process."""
-    for object_id in object_ids:
+    for object_id, expected_size in expected_sizes.items():
         if SHA_PATTERN.fullmatch(object_id) is None:
             raise ImportFailure("donor tree contains an invalid object identifier")
+        if expected_size < 0 or expected_size > MAX_FILE_BYTES:
+            raise ImportFailure("donor tree violates the individual file byte bound")
     environment = os.environ.copy()
     environment["GIT_CONFIG_NOSYSTEM"] = "1"
     environment["GIT_CONFIG_GLOBAL"] = os.devnull
-    request = b"".join(object_id.encode("ascii") + b"\n" for object_id in object_ids)
-    process = subprocess.Popen(
-        ["git", "cat-file", "--batch"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=environment,
-    )
-    stdout, stderr = process.communicate(request)
-    if process.returncode != 0:
-        message = stderr.decode("utf-8", errors="replace").strip()
-        raise ImportFailure(f"cannot read donor blobs: {message}")
-    blobs: dict[str, bytes] = {}
-    position = 0
-    for requested_id in object_ids:
-        header_end = stdout.find(b"\n", position)
-        if header_end == -1:
-            raise ImportFailure("donor blob batch ended before its header")
-        header = stdout[position:header_end]
-        position = header_end + 1
-        fields = header.split(b" ")
-        if len(fields) != 3 or fields[1] != b"blob":
-            raise ImportFailure("donor blob batch returned an invalid header")
+    with tempfile.TemporaryFile() as error_stream:
+        process = subprocess.Popen(
+            ["git", "cat-file", "--batch"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=error_stream,
+            env=environment,
+        )
+        if process.stdin is None or process.stdout is None:
+            process.kill()
+            process.wait()
+            raise ImportFailure("cannot open bounded donor blob streams")
         try:
-            returned_id = fields[0].decode("ascii")
-            size = int(fields[2].decode("ascii"))
-        except (UnicodeDecodeError, ValueError) as error:
-            raise ImportFailure("donor blob batch returned malformed metadata") from error
-        if returned_id != requested_id or size < 0 or size > MAX_FILE_BYTES:
-            raise ImportFailure("donor blob batch violated its requested identifier or size bound")
-        content_end = position + size
-        if content_end >= len(stdout) or stdout[content_end : content_end + 1] != b"\n":
-            raise ImportFailure("donor blob batch returned truncated content")
-        blobs[requested_id] = stdout[position:content_end]
-        position = content_end + 1
-    if position != len(stdout):
-        raise ImportFailure("donor blob batch returned unexpected trailing data")
-    return blobs
+            blobs: dict[str, bytes] = {}
+            for requested_id, expected_size in expected_sizes.items():
+                process.stdin.write(requested_id.encode("ascii") + b"\n")
+                process.stdin.flush()
+                header = process.stdout.readline(256)
+                if not header.endswith(b"\n"):
+                    raise ImportFailure("donor blob batch ended before its header")
+                fields = header.rstrip(b"\n").split(b" ")
+                if len(fields) != 3 or fields[1] != b"blob":
+                    raise ImportFailure("donor blob batch returned an invalid header")
+                try:
+                    returned_id = fields[0].decode("ascii")
+                    size = int(fields[2].decode("ascii"))
+                except (UnicodeDecodeError, ValueError) as error:
+                    raise ImportFailure("donor blob batch returned malformed metadata") from error
+                if returned_id != requested_id or size != expected_size:
+                    raise ImportFailure("donor blob batch violated its requested identifier or size bound")
+                content = process.stdout.read(size)
+                if len(content) != size or process.stdout.read(1) != b"\n":
+                    raise ImportFailure("donor blob batch returned truncated content")
+                blobs[requested_id] = content
+            process.stdin.close()
+            if process.stdout.read(1):
+                raise ImportFailure("donor blob batch returned unexpected trailing data")
+            return_code = process.wait()
+            if return_code != 0:
+                error_stream.seek(0)
+                message = error_stream.read(MAX_REPORT_BYTES).decode("utf-8", errors="replace").strip()
+                raise ImportFailure(f"cannot read donor blobs: {message}")
+            return blobs
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait()
+            if not process.stdin.closed:
+                process.stdin.close()
+            process.stdout.close()
 
 
 def build_donor_entry(source: tuple[str, str, bytes]) -> DonorEntry:
@@ -298,8 +338,8 @@ def build_donor_entry(source: tuple[str, str, bytes]) -> DonorEntry:
 
 def load_tree(commit: str) -> tuple[dict[str, DonorEntry], list[str]]:
     """Load allowed blobs once and list excluded paths."""
-    result = run_git(["ls-tree", "-r", "-z", "--full-tree", commit])
-    allowed_metadata: list[tuple[str, str]] = []
+    result = run_git(["ls-tree", "-r", "-z", "-l", "--full-tree", commit])
+    allowed_metadata: list[tuple[str, str, int]] = []
     excluded: list[str] = []
     records = result.stdout.split(b"\0")
     for raw_record in records:
@@ -309,7 +349,7 @@ def load_tree(commit: str) -> tuple[dict[str, DonorEntry], list[str]]:
         if not separator:
             raise ImportFailure("donor tree record lacks a path separator")
         try:
-            mode, object_type, object_id = metadata.decode("ascii").split(" ")
+            mode, object_type, object_id, raw_size = metadata.decode("ascii").split()
             path = validate_path(raw_path.decode("utf-8"))
         except (UnicodeDecodeError, ValueError) as error:
             raise ImportFailure("donor tree contains malformed metadata") from error
@@ -318,13 +358,27 @@ def load_tree(commit: str) -> tuple[dict[str, DonorEntry], list[str]]:
             continue
         if object_type != "blob" or mode not in {"100644", "100755"}:
             raise ImportFailure(f"unsupported donor entry at {path}")
-        allowed_metadata.append((path, object_id))
+        try:
+            size = int(raw_size)
+        except ValueError as error:
+            raise ImportFailure(f"donor tree contains an invalid blob size at {path}") from error
+        if size < 0 or size > MAX_FILE_BYTES:
+            raise ImportFailure("donor tree violates the individual file byte bound")
+        allowed_metadata.append((path, object_id, size))
     if len(allowed_metadata) > MAX_CHANGED_FILES:
         raise ImportFailure("donor import exceeds the file-count bound")
-    blobs = read_blobs([object_id for _, object_id in allowed_metadata])
+    donor_total = sum(size for _, _, size in allowed_metadata)
+    if donor_total > MAX_TOTAL_BYTES:
+        raise ImportFailure("donor import exceeds the aggregate byte bound")
+    expected_sizes: dict[str, int] = {}
+    for _, object_id, size in allowed_metadata:
+        previous_size = expected_sizes.setdefault(object_id, size)
+        if previous_size != size:
+            raise ImportFailure("donor tree reports inconsistent blob sizes")
+    blobs = read_blobs(expected_sizes)
     entry_sources = (
         (path, object_id, blobs[object_id])
-        for path, object_id in allowed_metadata
+        for path, object_id, _ in allowed_metadata
     )
     transformed_entries = bounded_parallel_map(build_donor_entry, entry_sources)
     entries: dict[str, DonorEntry] = {}
@@ -417,9 +471,19 @@ def receipt_files(receipt: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
     return files
 
 
+def workspace_target(workspace: Path, path: str) -> Path:
+    """Resolve one validated child path without crossing a linked parent."""
+    target = workspace.joinpath(*PurePosixPath(path).parts)
+    resolved_workspace = workspace.resolve()
+    resolved_parent = target.parent.resolve()
+    if resolved_parent != resolved_workspace and resolved_workspace not in resolved_parent.parents:
+        raise ImportFailure(f"import destination escapes the workspace: {path}")
+    return target
+
+
 def local_digest(workspace: Path, path: str) -> str | None:
     """Return the current SHA-256 digest without following unsafe file types."""
-    target = workspace.joinpath(*PurePosixPath(path).parts)
+    target = workspace_target(workspace, path)
     if not target.exists():
         return None
     if target.is_symlink() or not target.is_file():
@@ -621,18 +685,16 @@ def marker_content(local: bytes, donor: bytes, path: str) -> bytes | None:
 
 def write_imported_file(workspace: Path, path: str, content: bytes) -> None:
     """Write one validated imported file beneath the workspace."""
-    target = workspace.joinpath(*PurePosixPath(path).parts)
-    resolved_parent = target.parent.resolve()
-    resolved_workspace = workspace.resolve()
-    if resolved_parent != resolved_workspace and resolved_workspace not in resolved_parent.parents:
-        raise ImportFailure(f"import destination escapes the workspace: {path}")
+    target = workspace_target(workspace, path)
+    if target.is_symlink() or (target.exists() and not target.is_file()):
+        raise ImportFailure(f"cannot overwrite unsupported workspace entry: {path}")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(content)
 
 
 def remove_imported_file(workspace: Path, path: str) -> None:
     """Remove one previously imported regular file."""
-    target = workspace.joinpath(*PurePosixPath(path).parts)
+    target = workspace_target(workspace, path)
     if target.is_symlink() or (target.exists() and not target.is_file()):
         raise ImportFailure(f"cannot remove unsupported workspace entry: {path}")
     if target.exists():
@@ -681,7 +743,9 @@ def apply_import(
     for path in sorted(set(target_entries) | set(imported_files)):
         target = target_entries.get(path)
         if path in conflicts:
-            local_path = workspace.joinpath(*PurePosixPath(path).parts)
+            local_path = workspace_target(workspace, path)
+            if local_path.is_symlink() or (local_path.exists() and not local_path.is_file()):
+                raise ImportFailure(f"workspace path has an unsupported file type: {path}")
             local_content = local_path.read_bytes() if local_path.exists() else b""
             donor_content = b"" if target is None else target.content
             marked = marker_content(local_content, donor_content, path)

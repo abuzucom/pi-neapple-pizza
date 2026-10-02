@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.23] (2026-10-02)
+
+### Security
+
+- Bound donor blob parsing before body capture and reject unsafe donor script paths.
+
 ## [0.2.22] (2026-10-02)
 
 ### Security
