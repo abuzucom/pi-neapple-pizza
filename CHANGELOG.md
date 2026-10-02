@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.28] (2026-10-02)
+
+### Fixed
+
+- Bound Windows shard process-tree cleanup after timeout.
+
 ## [0.2.27] (2026-10-02)
 
 ### Fixed

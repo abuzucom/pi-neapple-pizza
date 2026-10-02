@@ -258,10 +258,14 @@ def is_exclusive_shard(label: str) -> bool:
 def terminate_process_tree(process: subprocess.Popen) -> None:
     """Stop a timed-out test process and all descendants."""
     if os.name == "nt":
-        subprocess.run(
-            ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            capture_output=True, check=False, text=True,
-            encoding="utf-8", errors="replace")
+        try:
+            subprocess.run(
+                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                capture_output=True, check=False, text=True,
+                encoding="utf-8", errors="replace",
+                timeout=PROCESS_SHUTDOWN_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired:
+            process.kill()
     else:
         os.killpg(process.pid, signal.SIGTERM)
     try:
