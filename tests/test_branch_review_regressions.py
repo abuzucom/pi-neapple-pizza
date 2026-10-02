@@ -108,6 +108,38 @@ class BranchReviewTest(unittest.TestCase):
                 self.assertEqual(result.returncode, 2, result.stdout)
                 self.assertIn("metadata", result.stderr)
 
+
+class BranchWorkflowReviewTest(unittest.TestCase):
+    """Exercise workflow consent without metadata copy cases."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name).resolve()
+        self.admin = self.root / ".git"
+        (self.admin / "objects").mkdir(parents=True)
+        (self.admin / "refs" / "heads").mkdir(parents=True)
+        (self.admin / "HEAD").write_text("ref: refs/heads/fix/example\n", encoding="utf-8")
+        (self.admin / "config").write_text("[core]\nbare = false\n", encoding="utf-8")
+        self.global_config = self.root / "global.config"
+        self.global_config.write_text("", encoding="utf-8")
+        self.environment = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        self.environment.update({"CLAUDE_PROJECT_DIR": str(self.root), "GIT_CONFIG_NOSYSTEM": "1",
+                                 "GIT_CONFIG_GLOBAL": str(self.global_config)})
+        (self.root / "scripts").mkdir()
+        for name in ("run_tests.py", "read_git_state.py", "trusted_gh.py", "sync.py"):
+            (self.root / "scripts" / name).write_bytes((REPO_ROOT / "scripts" / name).read_bytes())
+        (self.root / "Makefile").write_bytes((REPO_ROOT / "Makefile").read_bytes())
+
+    def run_candidate(self, command: str, mode: str = "default") -> subprocess.CompletedProcess:
+        """Invoke the hook with isolated repository metadata and configuration."""
+        payload = {"hook_event_name": "PreToolUse", "permission_mode": mode,
+                   "tool_name": "Bash", "tool_input": {"command": command}}
+        return subprocess.run(
+            [sys.executable, str(HOOK_PATH)], input=json.dumps(payload),
+            env=self.environment, capture_output=True, text=True, timeout=15, check=False,
+        )
+
     def test_required_workflows_request_consent(self) -> None:
         for command in ("python scripts/run_tests.py", "python scripts/read_git_state.py all",
                         "python scripts/sync.py --check", "make lint PYTHON=python",

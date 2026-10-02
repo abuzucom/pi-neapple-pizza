@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.27] (2026-10-02)
+
+### Fixed
+
+- Split branch-review regression classes to preserve bounded shard execution.
+
 ## [0.2.26] (2026-10-02)
 
 ### Documentation
