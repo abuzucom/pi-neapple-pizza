@@ -102,3 +102,9 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+
+## Upstream convergence
+
+- Remove the Dependabot changelog companion to match `abuzucom/agents`
+  commit `ee08521`. `docs/agents-adoption.json` and `plan/ADOPTION.md`
+  keep the original adoption inventory unchanged.

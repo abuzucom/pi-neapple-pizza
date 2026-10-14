@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.2] (2026-10-14)
+
+### Removed
+
+- Remove the Dependabot changelog companion workflow, script, and test.
+  Upstream `abuzucom/agents` removed the same files in `ee08521`. The workflow token
+  cannot read the `/user` endpoint that `scripts/trusted_gh.py` checks.
+  Dependabot pull requests need manual changelog entries.
+
 ## [0.1.1] (2026-09-30)
 
 ### Security
