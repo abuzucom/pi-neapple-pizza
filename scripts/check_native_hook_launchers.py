@@ -9,6 +9,7 @@ CONFIGS = (("codex", ".codex/hooks.json"), ("gemini", ".gemini/settings.json"),
            ("antigravity", ".agents/hooks.json"))
 BLOCKING_HOOKS = ("enforce_branch_name.py", "native_client_gate.py")
 TIMEOUT_SECONDS = 30
+ISOLATED_LAUNCHER = ("python", "-I", "-c")
 
 
 def collect_commands(value: object) -> list[str]:
@@ -29,8 +30,9 @@ def collect_commands(value: object) -> list[str]:
 def launch_command(command: str, payload: dict, cwd: Path) -> subprocess.CompletedProcess:
     """Parse fixed registration text without executing shell substitutions."""
     arguments = shlex.split(command, posix=True)
-    if not arguments or arguments[0] != "python":
-        raise ValueError("native hook launcher is unsupported")
+    # Isolated mode keeps modules planted in the working directory out of the launcher.
+    if arguments[:3] != list(ISOLATED_LAUNCHER):
+        raise ValueError("native hook launcher lacks the isolated python form")
     environment = dict(os.environ)
     environment.pop("CLAUDE_PROJECT_DIR", None)
     return subprocess.run(arguments, input=json.dumps(payload), cwd=cwd,
@@ -54,6 +56,8 @@ def check_native_launchers(root: Path) -> None:
             payload = {"workspacePaths": [str(root)],
                        "toolCall": {"name": "run_command", "args": {"CommandLine": "rm -rf /"}}}
         for command in commands:
+            if shlex.split(command, posix=True)[:3] != list(ISOLATED_LAUNCHER):
+                raise ValueError("native hook launcher lacks the isolated python form")
             if not any(name in command for name in BLOCKING_HOOKS):
                 continue
             command_payload = json.loads(json.dumps(payload))

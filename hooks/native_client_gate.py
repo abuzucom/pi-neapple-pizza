@@ -14,12 +14,19 @@ CHECK_TIMEOUT_SECONDS = 20
 SHELL_TOOLS = frozenset({"Bash", "PowerShell", "Cmd", "CMD", "CommandPrompt",
                          "run_shell_command", "run_command", "exec_command"})
 FILE_TOOLS = {"Read": "Read", "read_file": "Read", "view_file": "Read",
+              "view_file_outline": "Read",
               "Write": "Write", "write_file": "Write", "write_to_file": "Write",
               "Edit": "Edit", "replace": "Edit", "replace_file_content": "Edit",
               "MultiEdit": "MultiEdit", "multi_replace_file_content": "MultiEdit",
               "NotebookEdit": "NotebookEdit", "Glob": "Glob", "Grep": "Grep",
               "glob": "Glob", "grep_search": "Grep", "search_file_content": "Grep",
               "find_by_name": "Glob", "list_directory": "Glob", "list_dir": "Glob"}
+MULTI_READ_TOOLS = frozenset({"read_many_files"})
+MULTI_READ_KEYS = ("paths", "include")
+# Tools that reach no workspace file or shell. Every other unmapped tool denies.
+NON_FILE_TOOLS = frozenset({"update_plan", "write_todos", "TodoWrite", "WebFetch",
+                            "WebSearch", "web_fetch", "web_search", "google_web_search",
+                            "search_web", "read_url_content"})
 SHELL_GATES = (("block_destructive_bash.py", "Bash"),
                ("block_destructive_powershell.py", "PowerShell"),
                ("block_destructive_cmd.py", "Cmd"))
@@ -142,6 +149,23 @@ def inspect_file(tool: str, arguments: dict, cwd: str) -> None:
         run_gate("require_consent.py", tool, normalized, cwd)
 
 
+def inspect_many(arguments: dict, cwd: str) -> None:
+    """Inspect every path and include entry of a multi-file read."""
+    entries = []
+    for key in MULTI_READ_KEYS:
+        if key not in arguments:
+            continue
+        values = arguments[key]
+        if not isinstance(values, list) or not all(isinstance(value, str) and value
+                                                   for value in values):
+            raise ValueError("multi-file read entries cannot be inspected")
+        entries.extend(values)
+    if not entries:
+        raise ValueError("multi-file read destinations are absent")
+    for entry in entries:
+        inspect_file("Read", {"file_path": entry}, cwd)
+
+
 def inspect_patch(arguments: dict, cwd: str) -> None:
     """Inspect every patch destination without executing patch text."""
     patch = arguments.get("command")
@@ -177,6 +201,10 @@ def main() -> int:
             inspect_patch(arguments, cwd)
         elif name in FILE_TOOLS:
             inspect_file(FILE_TOOLS[name], arguments, cwd)
+        elif name in MULTI_READ_TOOLS:
+            inspect_many(arguments, cwd)
+        elif name not in NON_FILE_TOOLS:
+            raise ValueError("the native policy gate has no inspection path for the tool")
     except (ValueError, OSError, subprocess.SubprocessError, UnicodeError, ImportError) as error:
         reason = " ".join(str(error).splitlines())
         reason = "".join(character for character in reason if 32 <= ord(character) < 127)
