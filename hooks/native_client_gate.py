@@ -23,6 +23,8 @@ FILE_TOOLS = {"Read": "Read", "read_file": "Read", "view_file": "Read",
               "find_by_name": "Glob", "list_directory": "Glob", "list_dir": "Glob"}
 MULTI_READ_TOOLS = frozenset({"read_many_files"})
 MULTI_READ_KEYS = ("paths", "include")
+# Each entry runs a gate subprocess. The cap keeps a call inside the client hook budget.
+MAX_MULTI_READ_ENTRIES = 64
 # Tools that reach no workspace file or shell. Every other unmapped tool denies.
 NON_FILE_TOOLS = frozenset({"update_plan", "write_todos", "TodoWrite", "WebFetch",
                             "WebSearch", "web_fetch", "web_search", "google_web_search",
@@ -162,6 +164,8 @@ def inspect_many(arguments: dict, cwd: str) -> None:
         entries.extend(values)
     if not entries:
         raise ValueError("multi-file read destinations are absent")
+    if len(entries) > MAX_MULTI_READ_ENTRIES:
+        raise ValueError("multi-file read entries exceed the inspection bound")
     for entry in entries:
         inspect_file("Read", {"file_path": entry}, cwd)
 

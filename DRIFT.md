@@ -101,6 +101,7 @@ Do not relax a gate to resolve an adoption block.
   `scripts/check_native_hook_launchers.py` rejects launchers without `-I`.
 - D019 makes the native adapter deny tools it cannot inspect.
   Gemini `read_many_files` checks each `paths` and `include` entry as a read.
+  Calls with more than 64 entries deny before any gate runs.
   Antigravity `view_file_outline` checks its path as a read.
   A fixed allowlist passes plan, todo, web search, and web fetch tools.
   MCP tools and new native tools deny until an adapter mapping exists.

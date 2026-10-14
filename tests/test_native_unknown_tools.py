@@ -49,6 +49,10 @@ class NativeUnknownToolsTest(unittest.TestCase):
         self.assert_denied("gemini", "read_many_files", {"paths": "README.md"})
         self.assert_denied("gemini", "read_many_files", {"paths": [7]})
 
+    def test_read_many_files_bounds_entry_count(self):
+        readme = str(ROOT / "README.md")
+        self.assert_denied("gemini", "read_many_files", {"paths": [readme] * 65})
+
     def test_read_many_files_allows_ordinary_paths(self):
         self.assert_allowed("gemini", "read_many_files", {"paths": [str(ROOT / "README.md")]})
 
