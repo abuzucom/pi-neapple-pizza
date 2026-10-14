@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.2] (2026-10-14)
+## [0.1.3] (2026-10-14)
 
 ### Security
 
@@ -8,6 +8,13 @@
 - Match protected gate paths without regard to case.
 - Require the approval label when the base lacks the integrity checker.
 - Protect imported scripts, policy files, and pi enforcement tools.
+
+### Removed
+
+- Remove the Dependabot changelog companion workflow, script, and test.
+  Upstream `abuzucom/agents` removed the same files in `ee08521`. The workflow token
+  cannot read the `/user` endpoint that `scripts/trusted_gh.py` checks.
+  Dependabot pull requests need manual changelog entries.
 
 ## [0.1.1] (2026-09-30)
 

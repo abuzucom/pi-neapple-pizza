@@ -114,3 +114,9 @@ The coupled client changes activate in one complete transaction.
   `tests/test_gate_pr_integrity_pi_paths.py` covers each added path.
   `shared-files.json` records the pi checker digest.
   The checker stays in the shared set to detect unrecorded edits.
+
+## Upstream convergence
+
+- Remove the Dependabot changelog companion to match `abuzucom/agents`
+  commit `ee08521`. `docs/agents-adoption.json` and `plan/ADOPTION.md`
+  keep the original adoption inventory unchanged.
