@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.8] (2026-11-19)
+
+### Added
+
+- Import the pi v1.5.2 `packages/evals` snapshot from `earendil-works/pi`.
+
 ## [0.2.7] (2026-11-19)
 
 ### Added
