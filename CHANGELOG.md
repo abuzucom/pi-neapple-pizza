@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] (2026-11-19)
+
+### Added
+
+- Import the pi v1.5.2 `packages/chord` snapshot from `earendil-works/pi`.
+
 ## [0.2.2] (2026-11-19)
 
 ### Added
