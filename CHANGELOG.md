@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] (2026-11-19)
+
+### Added
+
+- Import the pi v1.5.2 root build configuration and scripts from `earendil-works/pi`.
+
 ## [0.1.2] (2026-10-14)
 
 ### Removed
