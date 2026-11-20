@@ -31,6 +31,7 @@ No claim identifies the policy revision as the latest hosted revision.
 | D019 | Keep the BSD `LICENSE` and reproduce the upstream MIT notice in `LICENSES/pi-MIT.txt`. | Preserve the upstream copyright and permission notice. | Implemented |
 | D020 | Merge upstream ignore and attribute rules. | Keep pi build output untracked and pi sources tracked. | Implemented |
 | D021 | Retain upstream exact dependency pins and `package-lock.json` unchanged. | Upstream pins every direct dependency and records integrity for every locked package. | Implemented |
+| D022 | Remove the upstream `prepare` script and the `husky` dev dependency. | Husky rewrites `core.hooksPath` and bypasses the native policy hooks. | Implemented |
 
 ## Planned harness boundaries
 
@@ -119,6 +120,8 @@ The coupled client changes activate in one complete transaction.
   `.claude/settings.json` registers policy hooks.
 - D020 retains CRLF for `*.bat`, `*.cmd`, and `*.ps1`.
   Windows command interpreters require CRLF in those scripts.
+- D022 removes only the `husky` entries from `package-lock.json`.
+  Every other lock entry keeps upstream bytes and the upstream `libc` fields.
 - No runtime harness or containment claim applies to this import.
 
 ## Upstream convergence

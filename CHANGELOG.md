@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.16] (2026-11-19)
+
+### Security
+
+- Remove the upstream `prepare` script and the `husky` dev dependency.
+  Husky rewrites `core.hooksPath` during dependency installation.
+  The rewrite bypasses the native policy hooks.
+
 ## [0.2.15] (2026-11-19)
 
 ### Added
