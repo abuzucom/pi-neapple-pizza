@@ -1,4 +1,5 @@
 .git
+# runtime-root: this container preserves root-only evaluator sources and isolates model tools by UID (Rule 12 exception).
 **/.eval
 **/node_modules
 **/dist

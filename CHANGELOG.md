@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.19] (2026-11-19)
+
+### Fixed
+
+- Exclude `apps/p2/test/p2/fetch.test.ts` from the import.
+  The file embeds a literal private key for a throwaway localhost certificate.
+  Rule 8 forbids committing private key material.
+- Record the Rule 12 exception for the eval and voice server containers.
+  Both containers keep runtime root.
+  The exception comment names the reason in each Dockerfile.
+
 ## [0.2.18] (2026-11-19)
 
 ### Fixed

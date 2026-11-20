@@ -47,4 +47,5 @@ PY
 COPY segmenter.py server.py test_segmenter.py ./
 ENV PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1
 EXPOSE 8000
+# runtime-root: this container writes model caches under /models and runs the offline speech service as root (Rule 12 exception).
 CMD ["python", "server.py"]

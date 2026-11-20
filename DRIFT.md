@@ -33,6 +33,8 @@ No claim identifies the policy revision as the latest hosted revision.
 | D021 | Retain upstream exact dependency pins and `package-lock.json` unchanged. | Upstream pins every direct dependency and records integrity for every locked package. | Implemented |
 | D022 | Remove the upstream `prepare` script and the `husky` dev dependency. | Husky rewrites `core.hooksPath` and bypasses the native policy hooks. | Implemented |
 | D023 | Limit the Kubernetes values file name match to YAML extensions. | The name-only match protected source files such as `values.ts` and denied broad searches in the imported pi runtime. | Implemented |
+| D024 | Exclude `apps/p2/test/p2/fetch.test.ts` from the import. | The file embeds a literal private key for a throwaway localhost certificate. Rule 8 forbids committing private key material. | Implemented |
+| D025 | Retain runtime root in the eval and voice server containers. | The evaluator keeps root-only judge sources and isolates model tools by UID. The voice server writes model caches under `/models`. | Approved exception with future hardening review |
 
 ## Planned harness boundaries
 
@@ -126,6 +128,18 @@ The coupled client changes activate in one complete transaction.
 - D023 narrows the Kubernetes values file name match to YAML extensions.
   The upstream `abuzucom/agents` change carries the same fix.
   The upstream pull request is draft PR 147.
+- D024 excludes one upstream test file.
+  The file embeds a literal private key.
+  Rule 8 forbids committing private key material.
+  The upstream file stays available in `earendil-works/pi`.
+- D025 keeps runtime root in two upstream containers.
+  The Rule 12 exception comment records the reason in each Dockerfile.
+  The eval container preserves root-only evaluator sources and isolates model
+  tools by UID.
+  The voice server writes model caches under `/models`.
+  The upstream `abuzucom/agents` policy allows an approved exception with future
+  hardening review.
+  A later hardening pass must run both containers as a non-root user.
 - No runtime harness or containment claim applies to this import.
 
 ## Upstream convergence
