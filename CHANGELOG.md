@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.13] (2026-11-19)
+
+### Added
+
+- Import the pi v1.5.2 `apps/p2` snapshot from `earendil-works/pi`.
+
 ## [0.2.12] (2026-11-19)
 
 ### Added
