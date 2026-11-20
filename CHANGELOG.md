@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.18] (2026-11-19)
+
+### Fixed
+
+- Limit the Kubernetes values file name match in `hooks/_gate_core.py` to YAML
+  extensions. The gate protected any file whose name starts with `values-` or
+  `values.`. A source file named `values.ts` carries no Kubernetes
+  configuration, and its name reached the protected set. That denied broad
+  searches in repositories holding such a file.
+- Add `tests/test_infrastructure_values_scope.py`. The test covers the
+  protected YAML names and the unprotected source names.
+
 ## [0.2.17] (2026-11-19)
 
 ### Documentation

@@ -32,6 +32,7 @@ No claim identifies the policy revision as the latest hosted revision.
 | D020 | Merge upstream ignore and attribute rules. | Keep pi build output untracked and pi sources tracked. | Implemented |
 | D021 | Retain upstream exact dependency pins and `package-lock.json` unchanged. | Upstream pins every direct dependency and records integrity for every locked package. | Implemented |
 | D022 | Remove the upstream `prepare` script and the `husky` dev dependency. | Husky rewrites `core.hooksPath` and bypasses the native policy hooks. | Implemented |
+| D023 | Limit the Kubernetes values file name match to YAML extensions. | The name-only match protected source files such as `values.ts` and denied broad searches in the imported pi runtime. | Implemented |
 
 ## Planned harness boundaries
 
@@ -122,6 +123,9 @@ The coupled client changes activate in one complete transaction.
   Windows command interpreters require CRLF in those scripts.
 - D022 removes only the `husky` entries from `package-lock.json`.
   Every other lock entry keeps upstream bytes and the upstream `libc` fields.
+- D023 narrows the Kubernetes values file name match to YAML extensions.
+  The upstream `abuzucom/agents` change carries the same fix.
+  The upstream pull request is draft PR 147.
 - No runtime harness or containment claim applies to this import.
 
 ## Upstream convergence
