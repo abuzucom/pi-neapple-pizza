@@ -4,12 +4,12 @@
 
 Policy source: `abuzucom/agents` at `24f62e1c415313f1bc4bbd8cff30328ae6d69ae5`.
 Pi reference: `abuzucom/pi` at `e4c75a73222ae2c72abb5f5314fa35ee8effc508`.
-Original pi upstream: `earendil-works/pi`.
-`abuzucom/pi` retains fork-mirror lineage.
-`abuzucom/pi-neapple-pizza` uses an independent mirror.
+The `abuzucom/pi` repository no longer exists.
+Pi runtime source: `earendil-works/pi` tag `v1.5.2` at `b4afdddf44e059c67ccf5097e5317d913521b470`.
+`abuzucom/pi-neapple-pizza` uses an independent mirror without fork ancestry.
 Substantial harness divergence requires a separate distribution.
-Both revisions identify inspected local commits.
-No claim identifies either revision as the latest hosted revision.
+Each revision identifies an inspected local commit.
+No claim identifies the policy revision as the latest hosted revision.
 
 ## Decisions
 
@@ -25,6 +25,12 @@ No claim identifies either revision as the latest hosted revision.
 | D008 | Omit source-only policy orientation. | Avoid source-repository assumptions. | Included in this adoption |
 | D009 | Preserve canonical source text with LF conversion. | Satisfy the canonical encoding requirement. | Included in this adoption |
 | D010 | Require checks outside agent-writable policy files. | Contain autonomous execution by construction. | Planned |
+| D016 | Import the pi runtime directly from `earendil-works/pi` `v1.5.2`. | The `abuzucom/pi` mirror no longer exists. | Implemented |
+| D017 | Keep local `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, and `SECURITY.md`. | Preserve the adopted policy authority. | Implemented |
+| D018 | Exclude upstream `.github/`, `.husky/`, and `.pi/`. | Keep upstream release automation, Husky hooks, and auto-loaded pi resources out of this repository. | Implemented |
+| D019 | Keep the BSD `LICENSE` and reproduce the upstream MIT notice in `LICENSES/pi-MIT.txt`. | Preserve the upstream copyright and permission notice. | Implemented |
+| D020 | Merge upstream ignore and attribute rules. | Keep pi build output untracked and pi sources tracked. | Implemented |
+| D021 | Retain upstream exact dependency pins and `package-lock.json` unchanged. | Upstream pins every direct dependency and records integrity for every locked package. | Implemented |
 
 ## Planned harness boundaries
 
@@ -102,6 +108,18 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+
+## Pi runtime import
+
+- D016 imports 4,250 upstream files with unchanged blobs and modes.
+  Each package and app uses a dedicated snapshot commit.
+- D020 anchors Python packaging and environment folders to the repository root.
+  The unanchored patterns hid `packages/env` and other upstream sources.
+  The merge omits the upstream `.claude/` entry.
+  `.claude/settings.json` registers policy hooks.
+- D020 retains CRLF for `*.bat`, `*.cmd`, and `*.ps1`.
+  Windows command interpreters require CRLF in those scripts.
+- No runtime harness or containment claim applies to this import.
 
 ## Upstream convergence
 

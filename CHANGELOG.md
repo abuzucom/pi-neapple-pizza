@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.15] (2026-11-19)
+
+### Added
+
+- Reproduce the upstream pi MIT notice in `LICENSES/pi-MIT.txt`.
+  Reference the notice from `LICENSE`.
+- Merge the upstream pi ignore and attribute rules.
+
+### Fixed
+
+- Anchor Python packaging and environment ignore patterns to the repository root.
+  The unanchored patterns hid `packages/env` and other pi sources.
+
+### Documentation
+
+- Record `earendil-works/pi` `v1.5.2` as the pi runtime source in `DRIFT.md` and `README.md`.
+
 ## [0.2.14] (2026-11-19)
 
 ### Added
