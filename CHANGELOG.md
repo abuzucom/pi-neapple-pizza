@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.17] (2026-11-19)
+
+### Documentation
+
+- Describe the imported `earendil-works/pi` `v1.5.2` packages and apps in `docs/pi-architecture.md`.
+
 ## [0.2.16] (2026-11-19)
 
 ### Security
