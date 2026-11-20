@@ -1,21 +1,25 @@
 # Pi architecture reference
 
-Source repository: `abuzucom/pi`.
-Inspected revision: `e4c75a73222ae2c72abb5f5314fa35ee8effc508`.
-Original upstream: `earendil-works/pi`.
+Source repository: `earendil-works/pi`.
+Imported release: `v1.5.2` at `b4afdddf44e059c67ccf5097e5317d913521b470`.
+`DRIFT.md` records the excluded upstream paths and local adaptations.
 
-The packages below exist in the inspected source.
-The packages do not exist in this repository yet.
-
-| Package | Responsibility |
+| Path | Responsibility |
 |---|---|
-| `packages/agent` | Agent loop, durable harness, tools, sessions, and recovery. |
-| `packages/ai` | Model requests and provider integrations. |
+| `packages/agent` | Agent core with transport abstraction and state management. |
+| `packages/ai` | Unified model API and provider integrations. |
+| `packages/chord` | Object runtime for apps across processes. |
+| `packages/codemode` | Sandboxed JavaScript execution through injected tools. |
 | `packages/coding-agent` | CLI, RPC, SDK, tools, extensions, and interactive modes. |
-| `packages/chord` | Application composition and services. |
-| `packages/tui` | Terminal interface. |
-| `packages/telemetry` | Typed telemetry. |
-| Protocol, client, server, and session backends | Transport and durable session support. |
+| `packages/durable` | Durable conversation, task, and document runtime. |
+| `packages/env` | Remote execution environments for the durable runtime. |
+| `packages/evals` | Model and harness evaluations. |
+| `packages/mcp` | Model Context Protocol client. |
+| `packages/schema` | JSON Schema validation without eval. |
+| `packages/telemetry` | Typed telemetry contracts. |
+| `packages/tui` | Terminal interface library. |
+| `apps/p2` | Experimental durable UI prototype. |
+| `apps/p3` | Design documents without a runtime package. |
 
 CLI entry: `packages/coding-agent/src/cli.ts`.
 RPC entry: `packages/coding-agent/src/rpc-entry.ts`.
@@ -23,14 +27,16 @@ Preserve exported APIs, CLI flags, tool schemas, extension events, and session f
 
 ## Reference commands
 
-These commands require later source import and act-specific authorization.
+These commands require act-specific authorization.
 
 - Install approved dependencies with `npm ci --ignore-scripts`.
-- Run focused agent tests with the harness Vitest configuration.
-- Use the faux provider for coding-agent suite tests.
-- Run TUI tests with Node.
+- Build the packages with `npm run build`.
+  The `packages/ai` build fetches live model catalog data.
 - Inspect `npm run check` before execution.
-  The command rewrites files.
+  The command rewrites files through Biome.
+  Run `node scripts/biome-check.mjs` without `--write` for a read-only check.
+- Some `packages/ai` end-to-end tests read local provider credentials.
+  Review the test targets before execution.
 - Inspect `test.sh` before execution.
   The script recursively deletes its temporary tree.
   Script consent does not authorize destructive cleanup.

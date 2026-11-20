@@ -6,8 +6,11 @@ Canonical policy comes from `abuzucom/agents`.
 The policy governs planning, code, tests, documentation, commits, and pull requests.
 It overrides conflicting upstream pi agent guidance.
 
-The repository currently contains policy, hooks, scripts, tests, and client registrations.
-Pi runtime import and harness implementation require a later plan after adoption merge.
+The repository contains policy, hooks, scripts, tests, and client registrations.
+The pi runtime comes from `earendil-works/pi` tag `v1.5.2`.
+The runtime lives under `apps/`, `packages/`, and the root build files.
+Harness enforcement requires a later plan.
+`LICENSE` and `LICENSES/pi-MIT.txt` record the license terms.
 
 ## Documentation
 

@@ -12,3 +12,28 @@ CONVENTIONS.md text eol=lf
 .copilot-instructions text eol=lf
 .github/copilot-instructions.md text eol=lf
 docs/agent-policy/*.md text eol=lf
+
+# pi runtime entries from earendil-works/pi v1.5.2.
+# Windows command interpreters require CRLF line endings in batch and PowerShell scripts.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Shell scripts require LF line endings.
+*.sh text eol=lf
+
+# Archived patch artifacts preserve whitespace exactly.
+packages/agent/docs/**/*.diff -whitespace
+
+# Common binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
