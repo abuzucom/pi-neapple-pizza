@@ -1,6 +1,13 @@
 # Changelog
 
-## [0.1.2] (2026-10-14)
+## [0.1.3] (2026-10-14)
+
+### Security
+
+- Require a person to add the gate approval label after the latest push.
+- Match protected gate paths without regard to case.
+- Require the approval label when the base lacks the integrity checker.
+- Protect imported scripts, policy files, and pi enforcement tools.
 
 ### Removed
 

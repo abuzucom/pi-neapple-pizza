@@ -102,6 +102,18 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+- D016 adopts the `abuzucom/agents` `1835087` gate-integrity checker and workflow.
+  A person must add the approval label after the latest head push.
+  Path matching ignores case.
+  A missing base checker requires the label and never runs head code.
+  The workflow adds pinned `actions/github-script` v7.1.0 for timeline reads.
+- D017 extends the protected path list with pi enforcement code.
+  The list adds `tools/git_policy_hook.py`, `tools/git-hooks/`,
+  `tools/adopt_agents_bundle.py`, `tools/bundle_transaction.py`, and
+  `scripts/check_native_hook_launchers.py`.
+  `tests/test_gate_pr_integrity_pi_paths.py` covers each added path.
+  `shared-files.json` records the pi checker digest.
+  The checker stays in the shared set to detect unrecorded edits.
 
 ## Upstream convergence
 
