@@ -59,6 +59,14 @@ class NativeUnknownToolsTest(unittest.TestCase):
     def test_view_file_outline_checks_its_path(self):
         self.assert_denied("antigravity", "view_file_outline", {"AbsolutePath": CREDENTIAL})
 
+    def test_view_file_outline_allows_an_ordinary_path(self):
+        # The Antigravity payload carries a file path under `AbsolutePath`.
+        # The canonical branch tests use that key for `view_file`.
+        # An unread key denies as an absent destination, so an allowed call
+        # proves the key reached the gate.
+        self.assert_allowed("antigravity", "view_file_outline",
+                            {"AbsolutePath": str(ROOT / "README.md")})
+
     def test_unknown_tools_deny(self):
         for client in ("codex", "gemini", "antigravity"):
             for tool in ("mcp__server__read_secret", "future_tool"):

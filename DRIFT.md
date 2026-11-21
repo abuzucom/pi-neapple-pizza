@@ -95,11 +95,11 @@ Do not relax a gate to resolve an adoption block.
   The installer retains Windows junction checks.
 - D015 retains the original activation journal during remediation.
   A separate backup generation records current originals before publication.
-- D018 runs every native launcher as `python -I -c`.
+- D028 runs every native launcher as `python -I -c`.
   Isolated mode drops the working directory and user site from `sys.path`.
   A planted `pathlib.py` or `json.py` cannot replace the launcher logic.
   `scripts/check_native_hook_launchers.py` rejects launchers without `-I`.
-- D019 makes the native adapter deny tools it cannot inspect.
+- D029 makes the native adapter deny tools it cannot inspect.
   Gemini `read_many_files` checks each `paths` and `include` entry as a read.
   Calls with more than 64 entries deny before any gate runs.
   Antigravity `view_file_outline` checks its path as a read.

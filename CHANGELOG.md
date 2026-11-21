@@ -1,12 +1,14 @@
 # Changelog
 
-## [0.1.4] (2026-10-14)
+## [0.2.21] (2026-11-20)
 
 ### Security
 
 - Run native hook launchers with `python -I` to ignore planted modules.
 - Check every Gemini `read_many_files` path and include entry, up to 64.
 - Deny native tool calls the gate cannot inspect.
+
+## [0.1.2] (2026-10-14)
 
 ### Removed
 
