@@ -19,6 +19,7 @@ Harness enforcement requires a later plan.
 - [Project orientation](docs/project-orientation.md)
 - [Pi architecture reference](docs/pi-architecture.md)
 - [Pi policy integration](docs/pi-policy.md)
+- [Pi policy broker](docs/pi-broker.md)
 - [Portable policy](docs/portable-policy.md)
 - [Adoption provenance](docs/agents-adoption.json)
 - [Deliberate divergence](DRIFT.md)

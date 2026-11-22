@@ -126,7 +126,8 @@ def read_decision(verdict: dict, filename: str, returncode: int, errors: str) ->
 
     The canonical gates report a PreToolUse decision in the Claude shape. A
     response in any other shape cannot be inspected, so the adapter refuses
-    it instead of guessing.
+    it instead of guessing. An ask stays an ask so a caller with a consent
+    channel can carry it to a human.
     """
     details = verdict.get("hookSpecificOutput")
     if not isinstance(details, dict):
@@ -134,7 +135,7 @@ def read_decision(verdict: dict, filename: str, returncode: int, errors: str) ->
     decision = details.get("permissionDecision")
     reason = details.get("permissionDecisionReason")
     if decision in ("deny", "ask"):
-        return "deny", reason if isinstance(reason, str) else f"{filename} denied the call", ""
+        return decision, reason if isinstance(reason, str) else f"{filename} denied the call", ""
     if decision == "allow":
         if returncode:
             raise ValueError(errors.strip() or f"{filename} failed validation")
@@ -203,7 +204,11 @@ def check_adoption() -> str:
 
 
 def inspect_tool(tool: str, arguments: dict, cwd: str) -> tuple:
-    """Return the decision and reason for one pi tool call."""
+    """Return the canonical decision and reason for one pi tool call.
+
+    The decision keeps the canonical wording. An ask stays an ask, and the
+    caller decides whether a human can answer it.
+    """
     mapping = TOOL_GATES.get(tool)
     if mapping is None:
         return "deny", f"the tool {tool} has no canonical inspection path"
@@ -213,16 +218,16 @@ def inspect_tool(tool: str, arguments: dict, cwd: str) -> tuple:
         return "deny", failure
     tool_input = canonical_input(tool, arguments)
     decision, reason, _context = run_gate(BRANCH_GATE, canonical_tool, tool_input, cwd)
-    if decision == "deny":
-        return "deny", reason
+    if decision in ("deny", "ask"):
+        return decision, reason
     if tool in SHELL_TOOLS:
         decision, reason, _context = run_gate(IDENTITY_GATE, canonical_tool, tool_input, cwd)
-        if decision == "deny":
-            return "deny", reason
+        if decision in ("deny", "ask"):
+            return decision, reason
     for gate in gates:
         decision, reason, _context = run_gate(gate, canonical_tool, tool_input, cwd)
-        if decision == "deny":
-            return "deny", reason
+        if decision in ("deny", "ask"):
+            return decision, reason
     return "allow", ""
 
 
@@ -264,6 +269,8 @@ def main() -> int:
         if not isinstance(arguments, dict):
             raise ValueError("the tool arguments are missing or malformed")
         decision, reason = inspect_tool(tool, arguments, cwd)
+        if decision == "ask":
+            decision = "deny"
         return emit(decision, reason)
     except (ValueError, OSError, subprocess.SubprocessError, UnicodeError) as error:
         return emit("deny", str(error))
