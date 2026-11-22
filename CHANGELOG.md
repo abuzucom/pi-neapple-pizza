@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.23] (2026-11-20)
+
+### Fixed
+
+- State in `CONTRIBUTING.md` that the pi runtime is present.
+  The file still said the runtime had not entered this repository.
+
 ## [0.2.22] (2026-11-20)
 
 ### Fixed

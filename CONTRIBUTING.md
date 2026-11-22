@@ -12,7 +12,7 @@ Run adoption, launcher, synchronization, and shared-integrity checks.
 
 ## Pi development reference
 
-The pi runtime has not entered this repository.
+The pi runtime lives under `apps/`, `packages/`, and the root build files.
 See `docs/pi-architecture.md` for package-specific reference commands.
 Use the faux provider for later coding-agent suite tests.
 Preserve exported APIs, CLI flags, tool schemas, extension events, and session formats.
