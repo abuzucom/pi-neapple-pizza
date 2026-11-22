@@ -24,7 +24,10 @@ except ImportError:
 class HookWorker:
     """Invoke one hook process repeatedly through a JSON-line protocol."""
 
-    def __init__(self, hook_path, request_timeout: float = 5.0):
+    # A gate that sweeps a large repository reads thousands of files before it
+    # answers. The budget leaves room for a sweep on a slow host while a stuck
+    # worker still fails within the shard timeout.
+    def __init__(self, hook_path, request_timeout: float = 30.0):
         self.transport = JsonLineWorkerProcess(
             "hook",
             hook_path,

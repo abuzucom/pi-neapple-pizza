@@ -39,6 +39,8 @@ No claim identifies the policy revision as the latest hosted revision.
 | D031 | Load the pi adapter by path instead of adopting a `.pi` directory. | The upstream `.pi` resources stay out of this repository under D018. | Implemented |
 | D032 | Adopt the condensed portable policy as `docs/portable-policy.md`. | A constrained client needs a policy that fits a small context budget. | Implemented |
 | D033 | Keep the portable policy outside the assembled policy bundle. | The bundle carries every canonical rule and sits 2 bytes under its size cap. | Implemented |
+| D034 | Read each manifest prefix once per process and skip a repository ignored directory during the infrastructure sweep. | A sweep over the imported runtime reads thousands of files and exceeds the corpus request budget. | Implemented |
+| D035 | Raise the corpus worker request budget to 30 seconds and the resource-heavy shard timeout to 600 seconds. | A sweep over the imported runtime takes 178 seconds on a Windows host. | Implemented |
 
 ## Planned harness boundaries
 
@@ -210,3 +212,12 @@ The coupled client changes activate in one complete transaction.
 - Remove the Dependabot changelog companion to match `abuzucom/agents`
   commit `ee08521`. `docs/agents-adoption.json` and `plan/ADOPTION.md`
   keep the original adoption inventory unchanged.
+- D034 and D035 apply the sweep change to this repository's copy of the
+  shared gate core.
+  The upstream pull request 154 carries the same change.
+  The two copies differ because this repository adopted the gate core at
+  `24f62e1` and the upstream file moved on since then.
+  This section records the divergence until a full convergence lands.
+- The shared manifest records the digest of each local copy.
+  The upstream pull request 154 regenerates the upstream manifest.
+  The two manifests agree once the upstream pull request merges.

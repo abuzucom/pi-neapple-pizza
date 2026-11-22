@@ -50,7 +50,7 @@
     "_gate_core.py::sanitize": 1,
     "_gate_core.py::schedule_verdict": 1,
     "_gate_core.py::su_target_verdict": 1,
-    "_gate_core.py::tree_contains_protected_infrastructure": 2,
+    "_gate_core.py::tree_contains_protected_infrastructure": 1,
     "_gate_core.py::trusted_gh_arguments": 1,
     "_gate_core.py::unparseable_verdict": 1,
     "_gate_core.py::volume_verdict": 8,
