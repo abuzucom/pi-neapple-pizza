@@ -20,7 +20,7 @@ No claim identifies the policy revision as the latest hosted revision.
 | D003 | Keep pi architecture as a reference before import. | Preserve adoption-only scope. | Included in this adoption |
 | D004 | Use native Git hook launchers with pinned PyYAML. | Reuse the approved checker dependency. | Included in this adoption |
 | D005 | Require independent containment across channels. | Treat agent code as untrusted. | Implemented |
-| D006 | Preserve repeated security checks. | Detect changes between operations. | Planned for the harness |
+| D006 | Preserve repeated security checks. | Detect changes between operations. | Implemented |
 | D007 | Unify tool and kernel decision auditing. | Correlate containment evidence. | Implemented |
 | D008 | Omit source-only policy orientation. | Avoid source-repository assumptions. | Included in this adoption |
 | D009 | Preserve canonical source text with LF conversion. | Satisfy the canonical encoding requirement. | Included in this adoption |
@@ -64,6 +64,12 @@ Return safe denial reasons to support compliant alternatives.
 Repeated authorization, authentication, integrity, and freshness checks remain required.
 Performance changes require evidence that every security check remains effective.
 No cache may replace a required check against mutable security state.
+The broker repeats the pin check, the shared manifest check, and the
+canonical gate run before every decision.
+A change between two calls loses the next decision.
+The operating system boundary remains planned.
+An approval recorded outside the client interface is not proof of a human
+answer until that boundary lands.
 No runtime implementation or containment claim applies to this adoption.
 
 ## Policy scope

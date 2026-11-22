@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.4] (2026-11-22)
+## [0.3.5] (2026-11-22)
 
 ### Added
 
@@ -21,9 +21,10 @@
 
 ### Changed
 
-- Record D005, D007, and D010 as implemented.
-  D006 keeps its planned status because the repeated security checks belong
-  to the sandbox work.
+- Record D005, D006, D007, and D010 as implemented.
+  The broker repeats the pin check, the shared manifest check, and the
+  canonical gate run before every decision.
+  The operating system boundary remains planned.
 
 ## [0.3.3] (2026-11-22)
 
