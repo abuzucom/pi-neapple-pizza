@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.3] (2026-11-22)
+
+### Fixed
+
+- Read each manifest prefix once per process in `hooks/_gate_core.py`.
+  A sweep over the imported runtime reaches the same file through several
+  paths.
+- Skip a directory the repository ignores during the infrastructure sweep.
+  A directory that carries a protected marker stays in the sweep, and a
+  directory that holds one at the first level below it stays in the sweep too.
+- Raise the corpus worker request budget to 30 seconds.
+  A gate that sweeps the imported runtime reads thousands of files before it
+  answers.
+- Raise the resource-heavy shard timeout to 600 seconds.
+  The conflict marker scan over the imported runtime takes 178 seconds on a
+  Windows host.
+
 ## [0.3.2] (2026-11-20)
 
 ### Added

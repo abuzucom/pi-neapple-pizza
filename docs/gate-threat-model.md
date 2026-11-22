@@ -353,11 +353,26 @@ process. Selected CLI suites reuse one loaded entrypoint and restore argv,
 stdin, cwd, and environment after every request. Fresh-process smoke cases
 retain process-entrypoint coverage. Start notices, completion notices, and
 10-second heartbeats expose progress. A 30-second ordinary per-class timeout
-and a 180-second resource-heavy timeout terminate the process tree and fail the
-check. Coverage comparison starts only after every worker succeeds.
+and a 600-second resource-heavy timeout terminate the process tree and fail the
+check. The resource-heavy timeout covers the conflict marker scan over the
+imported runtime, which takes 178 seconds on a Windows host with 4,450 tracked
+files. Coverage comparison starts only after every worker succeeds.
 
 Every baseline entry requires a reason in this document. An unexplained entry
 represents untested code. A recorded exception requires an explanation.
+
+The infrastructure sweep reads every YAML and JSON file in a search root to
+test whether it holds a Kubernetes manifest. The sweep reads each manifest
+prefix once per process, and it skips a directory the repository ignores.
+A directory that carries a protected marker stays in the sweep, and a
+directory that holds one at the first level below it stays in the sweep too,
+so an ignore rule cannot hide a credential directory from the sweep at that
+depth. A repository can still hide a deeper credential directory from the
+sweep by ignoring a parent directory. A named path to that file still reaches
+the direct path check. The gate threat model records that a repository writer
+can change the gate itself, so the sweep stays defense in depth rather than an
+authorization boundary. The corpus worker request budget rises to 30 seconds
+so a sweep over a large repository answers inside the shard timeout.
 
 The baseline tool conservatively refuses baseline writes as root.
 Permission-mode tests use real files. Narrow patches at `os.open` and `os.stat`
