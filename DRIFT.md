@@ -37,6 +37,8 @@ No claim identifies the policy revision as the latest hosted revision.
 | D025 | Retain runtime root in the eval and voice server containers. | The evaluator keeps root-only judge sources and isolates model tools by UID. The voice server writes model caches under `/models`. | Approved exception with future hardening review |
 | D030 | Route pi tool calls through the canonical Python gates. | One classifier and one decision source serve every client. | Implemented |
 | D031 | Load the pi adapter by path instead of adopting a `.pi` directory. | The upstream `.pi` resources stay out of this repository under D018. | Implemented |
+| D032 | Adopt the condensed portable policy as `docs/portable-policy.md`. | A constrained client needs a policy that fits a small context budget. | Implemented |
+| D033 | Keep the portable policy outside the assembled policy bundle. | The bundle carries every canonical rule and sits 2 bytes under its size cap. | Implemented |
 
 ## Planned harness boundaries
 
@@ -186,6 +188,22 @@ The coupled client changes activate in one complete transaction.
 - The adapter gates tool calls only.
   It does not bound the network, the process tree, or the filesystem.
   No harness containment claim applies to this adapter.
+
+## Portable policy
+
+- D032 adds `docs/portable-policy.md`.
+  The document reproduces `abuzucom/portableops` `PORTABLE-5000.md` byte for byte.
+  The upstream blob is `0ca740584bf023a337d55c714a2fe231ec5dd2ad` at 4,556 bytes.
+  The copy carries 18 rules.
+  The canonical policy in this repository carries 19 and adds the pi gate path.
+  The portable copy omits the gate on state-changing GitHub CLI calls.
+- D033 keeps the document outside the assembled bundle.
+  The bundle carries every canonical rule and sits 2 bytes under its size cap.
+  A constrained client selects the portable copy instead of the bundle.
+- The prose checkers do not run on the portable copy.
+  The document reproduces upstream text. The upstream text uses an enumeration
+  style and a personal pronoun that the local style rules reject.
+  The upstream license notice receives the same treatment.
 
 ## Upstream convergence
 

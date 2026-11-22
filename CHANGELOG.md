@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.2] (2026-11-20)
+
+### Added
+
+- Add `docs/portable-policy.md`.
+  The document reproduces the `abuzucom/portableops` condensed policy byte
+  for byte at blob `0ca740584bf023a337d55c714a2fe231ec5dd2ad`.
+  A constrained client selects the copy instead of the assembled policy.
+
 ## [0.3.1] (2026-11-20)
 
 ### Changed
