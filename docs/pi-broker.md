@@ -87,5 +87,9 @@ the decision is an ask, and the digest of the request record.
 | D007 | Unify tool and kernel decision auditing | Implemented |
 | D010 | Require checks outside agent-writable policy files | Implemented |
 
-D006 keeps its planned status. The repeated security checks that the harness
-plan calls for belong to the sandbox work.
+D006 lands with the broker. The broker repeats the pin check, the shared
+manifest check, and the canonical gate run before every decision, so a change
+between two calls loses the next decision.
+
+The operating system boundary remains planned. An approval recorded outside
+the client interface is not proof of a human answer until the boundary lands.
