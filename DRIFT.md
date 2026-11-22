@@ -35,6 +35,8 @@ No claim identifies the policy revision as the latest hosted revision.
 | D023 | Limit the Kubernetes values file name match to YAML extensions. | The name-only match protected source files such as `values.ts` and denied broad searches in the imported pi runtime. | Implemented |
 | D024 | Exclude `apps/p2/test/p2/fetch.test.ts` from the import. | The file embeds a literal private key for a throwaway localhost certificate. Rule 8 forbids committing private key material. | Implemented |
 | D025 | Retain runtime root in the eval and voice server containers. | The evaluator keeps root-only judge sources and isolates model tools by UID. The voice server writes model caches under `/models`. | Approved exception with future hardening review |
+| D030 | Route pi tool calls through the canonical Python gates. | One classifier and one decision source serve every client. | Implemented |
+| D031 | Load the pi adapter by path instead of adopting a `.pi` directory. | The upstream `.pi` resources stay out of this repository under D018. | Implemented |
 
 ## Planned harness boundaries
 
@@ -163,6 +165,27 @@ The coupled client changes activate in one complete transaction.
   hardening review.
   A later hardening pass must run both containers as a non-root user.
 - No runtime harness or containment claim applies to this import.
+
+## Pi policy adapter
+
+- D030 adds `hooks/pi_client_gate.py`.
+  The adapter maps one pi tool call onto the canonical gate scripts.
+  It runs `enforce_branch_name.py` for every call.
+  It runs `enforce_git_identity.py` for every shell call.
+  It runs `scripts/check_gate_adoption.py` before the other gates.
+  A pi tool with no canonical inspection path denies.
+- D030 adds `integrations/pi/agents-gate.ts`.
+  The pi extension asks the adapter before every pi tool call.
+  A denied call never reaches the operating system.
+- D031 keeps the extension out of a `.pi` directory.
+  The operator loads it with `pi -e integrations/pi/agents-gate.ts`.
+- The adapter denies every act that a canonical gate would put to a human.
+  The registered native clients deny those acts for the same reason.
+- The pi gate shard runs alone with the resource timeout.
+  Every decision spawns the canonical gates as separate processes.
+- The adapter gates tool calls only.
+  It does not bound the network, the process tree, or the filesystem.
+  No harness containment claim applies to this adapter.
 
 ## Upstream convergence
 

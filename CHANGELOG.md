@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.3.1] (2026-11-20)
+
+### Changed
+
+- Record the pi adapter decisions as D030 and D031.
+  The runtime import records D016 through D025.
+  The native launcher pull request records D028 and D029.
+
+## [0.3.0] (2026-11-20)
+
+### Added
+
+- Add `hooks/pi_client_gate.py`.
+  The adapter maps one pi tool call onto the unchanged canonical gate scripts
+  and reports the canonical decision.
+  Every call runs the branch gate, the adoption checker, and the gates for
+  the tool.
+  Every shell call runs the identity gate.
+  A pi tool with no canonical inspection path denies.
+- Add `integrations/pi/agents-gate.ts`.
+  The pi extension asks the adapter before every pi tool call and blocks a
+  denied call.
+  The extension loads by path. The repository adopts no `.pi` directory.
+- Add `docs/pi-policy.md`.
+  The document records the gate mapping, the session behavior, and the
+  coverage limits.
+- Add `tests/test_pi_client_gate.py` and `integrations/pi/agents-gate.test.ts`.
+  Both suites run the canonical gates for real.
+
+### Changed
+
+- Register the `pi` client in `hooks/enforce_branch_name.py`.
+  The branch gate now accepts the pi client label and denies an ask the way
+  the native clients deny it.
+- Register the pi gate shard as a resource-heavy shard in
+  `scripts/check_hook_coverage.py`.
+  The shard spawns the canonical gates for every decision and runs alone with
+  the resource timeout.
+- Record the pi adapter limits in `hook-coverage-baseline.json` and
+  `docs/gate-threat-model.md`.
+- Extend the lint file list with `docs/pi-policy.md`.
+- Extend the TypeScript and Biome file sets with the integration directory.
+
 ## [0.2.23] (2026-11-20)
 
 ### Fixed

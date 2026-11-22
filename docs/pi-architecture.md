@@ -20,6 +20,7 @@ Imported release: `v1.5.2` at `b4afdddf44e059c67ccf5097e5317d913521b470`.
 | `packages/tui` | Terminal interface library. |
 | `apps/p2` | Experimental durable UI prototype. |
 | `apps/p3` | Design documents without a runtime package. |
+| `integrations/pi` | Local pi extension that gates pi tool calls. |
 
 CLI entry: `packages/coding-agent/src/cli.ts`.
 RPC entry: `packages/coding-agent/src/rpc-entry.ts`.
@@ -43,3 +44,9 @@ These commands require act-specific authorization.
 
 Canonical agents policy overrides conflicting pi agent guidance.
 Do not substitute upstream convenience paths for adopted gates.
+
+## Policy integration
+
+`hooks/pi_client_gate.py` maps pi tool calls onto the canonical gates.
+`integrations/pi/agents-gate.ts` calls that adapter and blocks a denied call.
+See `docs/pi-policy.md` for the mapping and the coverage limits.

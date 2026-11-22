@@ -9,6 +9,7 @@ It overrides conflicting upstream pi agent guidance.
 The repository contains policy, hooks, scripts, tests, and client registrations.
 The pi runtime comes from `earendil-works/pi` tag `v1.5.2`.
 The runtime lives under `apps/`, `packages/`, and the root build files.
+The pi agent client reaches the canonical gates through `integrations/pi/agents-gate.ts`.
 Harness enforcement requires a later plan.
 `LICENSE` and `LICENSES/pi-MIT.txt` record the license terms.
 
@@ -17,6 +18,7 @@ Harness enforcement requires a later plan.
 - [Canonical policy](AGENTS.md)
 - [Project orientation](docs/project-orientation.md)
 - [Pi architecture reference](docs/pi-architecture.md)
+- [Pi policy integration](docs/pi-policy.md)
 - [Adoption provenance](docs/agents-adoption.json)
 - [Deliberate divergence](DRIFT.md)
 - [Contribution workflow](CONTRIBUTING.md)
