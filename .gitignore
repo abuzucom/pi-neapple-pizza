@@ -8,18 +8,19 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
-develop-eggs/
+# Anchor Python packaging folders to the root to keep pi package sources tracked.
+/build/
+/develop-eggs/
 dist/
-downloads/
-eggs/
+/downloads/
+/eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -151,9 +152,10 @@ activemq-data/
 .env
 .envrc
 .venv
-env/
+# Anchor environment folders to the root to keep packages/env tracked.
+/env/
 venv/
-ENV/
+/ENV/
 env.bak/
 venv.bak/
 
@@ -222,3 +224,43 @@ __marimo__/
 .gate-adoption-*/
 .test-temp/
 __pycache__/
+
+# pi runtime entries from earendil-works/pi v1.5.2.
+# The upstream .claude/ entry stays omitted because .claude/settings.json registers policy hooks.
+node_modules
+.artifacts/
+.DS_Store
+*.tsbuildinfo
+packages/*/dist/
+packages/*/dist-chrome/
+packages/*/dist-firefox/
+packages/ai/src/providers/data/
+packages/ai/src/providers/.model-generation-*/
+*.cpuprofile
+.vscode/
+.zed/
+.idea/
+*.swp
+*.swo
+*~
+.npm/
+coverage/
+.nyc_output/
+.pi_config/
+tui-debug.log
+compaction-results/
+.opencode/
+syntax.jsonl
+out.jsonl
+pi-*.html
+out.html
+packages/coding-agent/binaries/
+packages/env/bin/
+packages/env/daemon/target/
+todo.md
+plans/
+.pi/hf-sessions/
+.pi/hf-sessions-backup/
+.pi/settings.json
+collect.sh
+packages/agent/docs/extensions/pi-server-artifact/index.md

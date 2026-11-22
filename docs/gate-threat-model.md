@@ -286,6 +286,11 @@ reason.
   the baseline until the subprocess tracer can attribute this import path.
 - `is_test_path` retains alternate Windows path-component and drive-relative
   arms. Representative test-shaped and ordinary paths cover each verdict.
+- `is_protected_infrastructure_path` retains two unreached statements.
+  The Kubernetes values file name match reaches the protected set only for a
+  YAML extension.
+  `tests/test_infrastructure_values_scope.py` covers the protected YAML names
+  and the unprotected source names.
 - `su_target_verdict` retains malformed option sequences, unsupported option
   operands, and direct-caller token shapes. Corpus rows cover missing, root,
   fixed non-root, dynamic, and command-payload targets.

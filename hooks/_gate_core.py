@@ -595,6 +595,8 @@ KUBERNETES_FILENAMES = frozenset({
     "chart.yaml", "chart.yml", "helmfile.yaml", "helmfile.yml",
     "kustomization.yaml", "kustomization.yml", "values.yaml", "values.yml",
 })
+KUBERNETES_VALUE_PREFIXES = ("values-", "values.")
+KUBERNETES_VALUE_SUFFIXES = (".yaml", ".yml")
 INFRASTRUCTURE_SCAN_SKIP = frozenset({".git", ".venv", "node_modules", "__pycache__"})
 MAX_INFRASTRUCTURE_FILE_BYTES = 65536
 MAX_INFRASTRUCTURE_SCAN_FILES = 20000
@@ -779,6 +781,17 @@ def _infrastructure_manifest_text(path: str) -> str:
         return ""
 
 
+def _is_kubernetes_values_file(basename: str) -> bool:
+    """Return whether a file name is a Helm values file.
+
+    A Helm values file carries a YAML extension. The name alone must not
+    reach the protected set. A source file named `values.ts` carries no
+    Kubernetes configuration.
+    """
+    return (basename.startswith(KUBERNETES_VALUE_PREFIXES)
+            and basename.endswith(KUBERNETES_VALUE_SUFFIXES))
+
+
 def is_protected_infrastructure_path(path: str, cwd: str = "", content: str = "") -> bool:
     """Return whether a path reaches protected infrastructure configuration."""
     candidate = path.strip().strip('"').strip("'")
@@ -793,7 +806,7 @@ def is_protected_infrastructure_path(path: str, cwd: str = "", content: str = ""
         return True
     if any(marker in padded for marker in KUBERNETES_DIRECTORY_MARKERS):
         return True
-    if basename in KUBERNETES_FILENAMES or basename.startswith(("values-", "values.")):
+    if basename in KUBERNETES_FILENAMES or _is_kubernetes_values_file(basename):
         return True
     terraform_suffixes = (".tf", ".tf.json", ".tfvars", ".tfvars.json")
     if basename.endswith(terraform_suffixes):
