@@ -25,8 +25,8 @@ No claim identifies the policy revision as the latest hosted revision.
 | D008 | Omit source-only policy orientation. | Avoid source-repository assumptions. | Included in this adoption |
 | D009 | Preserve canonical source text with LF conversion. | Satisfy the canonical encoding requirement. | Included in this adoption |
 | D010 | Require checks outside agent-writable policy files. | Contain autonomous execution by construction. | Planned |
-| D016 | Import the pi runtime directly from `earendil-works/pi` `v1.5.2`. | The `abuzucom/pi` mirror no longer exists. | Implemented |
-| D017 | Keep local `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, and `SECURITY.md`. | Preserve the adopted policy authority. | Implemented |
+| D026 | Import the pi runtime directly from `earendil-works/pi` `v1.5.2`. | The `abuzucom/pi` mirror no longer exists. | Implemented |
+| D027 | Keep local `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, and `SECURITY.md`. | Preserve the adopted policy authority. | Implemented |
 | D018 | Exclude upstream `.github/`, `.husky/`, and `.pi/`. | Keep upstream release automation, Husky hooks, and auto-loaded pi resources out of this repository. | Implemented |
 | D019 | Keep the BSD `LICENSE` and reproduce the upstream MIT notice in `LICENSES/pi-MIT.txt`. | Preserve the upstream copyright and permission notice. | Implemented |
 | D020 | Merge upstream ignore and attribute rules. | Keep pi build output untracked and pi sources tracked. | Implemented |
@@ -105,6 +105,16 @@ Do not relax a gate to resolve an adoption block.
   The installer retains Windows junction checks.
 - D015 retains the original activation journal during remediation.
   A separate backup generation records current originals before publication.
+- D028 runs every native launcher as `python -I -c`.
+  Isolated mode drops the working directory and user site from `sys.path`.
+  A planted `pathlib.py` or `json.py` cannot replace the launcher logic.
+  `scripts/check_native_hook_launchers.py` rejects launchers without `-I`.
+- D029 makes the native adapter deny tools it cannot inspect.
+  Gemini `read_many_files` checks each `paths` and `include` entry as a read.
+  Calls with more than 64 entries deny before any gate runs.
+  Antigravity `view_file_outline` checks its path as a read.
+  A fixed allowlist passes plan, todo, web search, and web fetch tools.
+  MCP tools and new native tools deny until an adapter mapping exists.
 
 The shared adoption and launcher checkers add native registration requirements.
 The shared manifest retains every original entry.
@@ -112,10 +122,22 @@ Source provenance retains the immutable donor digests.
 The local receipt records each deliberate source difference separately.
 No change removes a gate, matcher, event, test assertion, or required security check.
 The coupled client changes activate in one complete transaction.
+- D016 adopts the `abuzucom/agents` `1835087` gate-integrity checker and workflow.
+  A person must add the approval label after the latest head push.
+  Path matching ignores case.
+  A missing base checker requires the label and never runs head code.
+  The workflow adds pinned `actions/github-script` v7.1.0 for timeline reads.
+- D017 extends the protected path list with pi enforcement code.
+  The list adds `tools/git_policy_hook.py`, `tools/git-hooks/`,
+  `tools/adopt_agents_bundle.py`, `tools/bundle_transaction.py`, and
+  `scripts/check_native_hook_launchers.py`.
+  `tests/test_gate_pr_integrity_pi_paths.py` covers each added path.
+  `shared-files.json` records the pi checker digest.
+  The checker stays in the shared set to detect unrecorded edits.
 
 ## Pi runtime import
 
-- D016 imports 4,250 upstream files with unchanged blobs and modes.
+- D026 imports 4,250 upstream files with unchanged blobs and modes.
   Each package and app uses a dedicated snapshot commit.
 - D020 anchors Python packaging and environment folders to the repository root.
   The unanchored patterns hid `packages/env` and other upstream sources.
