@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.4] (2026-11-22)
+
+### Added
+
+- Add `broker/pi_broker.py`.
+  The broker decides pi tool calls outside the repository.
+  It pins the digest of every file in the decision path and refuses a
+  decision after a change to one of those files.
+  It records every decision in an append-only log that carries the digest of
+  the line before it.
+  It consumes one approval per act, and an approval binds the request it
+  covers.
+- Add `docs/pi-broker.md`.
+  The document records the pin, the audit log, the approvals, and the limits.
+- Add `tests/test_pi_broker.py` with 11 cases.
+- Route the pi extension through the broker.
+  A decision that needs an answer reaches the operator through the client
+  interface, and the broker consumes the approval that follows.
+
+### Changed
+
+- Record D005, D007, and D010 as implemented.
+  D006 keeps its planned status because the repeated security checks belong
+  to the sandbox work.
+
 ## [0.3.3] (2026-11-22)
 
 ### Fixed

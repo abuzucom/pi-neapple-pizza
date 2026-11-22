@@ -19,12 +19,12 @@ No claim identifies the policy revision as the latest hosted revision.
 | D002 | Adopt every hook and script in one transaction. | Prevent partial gate activation. | Included in this adoption |
 | D003 | Keep pi architecture as a reference before import. | Preserve adoption-only scope. | Included in this adoption |
 | D004 | Use native Git hook launchers with pinned PyYAML. | Reuse the approved checker dependency. | Included in this adoption |
-| D005 | Require independent containment across channels. | Treat agent code as untrusted. | Planned |
+| D005 | Require independent containment across channels. | Treat agent code as untrusted. | Implemented |
 | D006 | Preserve repeated security checks. | Detect changes between operations. | Planned for the harness |
-| D007 | Unify tool and kernel decision auditing. | Correlate containment evidence. | Planned |
+| D007 | Unify tool and kernel decision auditing. | Correlate containment evidence. | Implemented |
 | D008 | Omit source-only policy orientation. | Avoid source-repository assumptions. | Included in this adoption |
 | D009 | Preserve canonical source text with LF conversion. | Satisfy the canonical encoding requirement. | Included in this adoption |
-| D010 | Require checks outside agent-writable policy files. | Contain autonomous execution by construction. | Planned |
+| D010 | Require checks outside agent-writable policy files. | Contain autonomous execution by construction. | Implemented |
 | D026 | Import the pi runtime directly from `earendil-works/pi` `v1.5.2`. | The `abuzucom/pi` mirror no longer exists. | Implemented |
 | D027 | Keep local `AGENTS.md`, `CONTRIBUTING.md`, `README.md`, and `SECURITY.md`. | Preserve the adopted policy authority. | Implemented |
 | D018 | Exclude upstream `.github/`, `.husky/`, and `.pi/`. | Keep upstream release automation, Husky hooks, and auto-loaded pi resources out of this repository. | Implemented |
@@ -41,6 +41,7 @@ No claim identifies the policy revision as the latest hosted revision.
 | D033 | Keep the portable policy outside the assembled policy bundle. | The bundle carries every canonical rule and sits 2 bytes under its size cap. | Implemented |
 | D034 | Read each manifest prefix once per process and skip a repository ignored directory during the infrastructure sweep. | A sweep over the imported runtime reads thousands of files and exceeds the corpus request budget. | Implemented |
 | D035 | Raise the corpus worker request budget to 30 seconds and the resource-heavy shard timeout to 600 seconds. | A sweep over the imported runtime takes 178 seconds on a Windows host. | Implemented |
+| D036 | Decide pi tool calls through the broker in `broker/pi_broker.py`. | The broker pins the decision path, records every decision outside the repository, and consumes one approval per act. | Implemented |
 
 ## Planned harness boundaries
 
@@ -183,6 +184,19 @@ The coupled client changes activate in one complete transaction.
   A denied call never reaches the operating system.
 - D031 keeps the extension out of a `.pi` directory.
   The operator loads it with `pi -e integrations/pi/agents-gate.ts`.
+- D036 adds `broker/pi_broker.py`.
+  The broker runs the canonical gates for the pi client.
+  It records the digest of every file in the decision path.
+  A change to one of those files loses the decision.
+  It records every decision in an append-only log that carries the digest of
+  the line before it.
+  It consumes one approval per act, and an approval binds the request it
+  covers.
+  The state directory lives outside the repository.
+  An agent with shell access can still call the broker directly.
+  An approval recorded outside the client interface is not proof of a
+  human answer.
+  The operating system boundary belongs to the sandbox work.
 - The adapter denies every act that a canonical gate would put to a human.
   The registered native clients deny those acts for the same reason.
 - The pi gate shard runs alone with the resource timeout.

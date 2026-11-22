@@ -21,6 +21,12 @@ Set `PI_POLICY_PYTHON` when the interpreter is not named `python` on the path.
 
 ## Gate mapping
 
+The pi client reaches the canonical gates through the broker in
+`broker/pi_broker.py`.
+The broker pins the decision path, records every decision outside the
+repository, and consumes one approval per act.
+See `docs/pi-broker.md` for the broker.
+
 | pi tool | Canonical tool | Canonical gates |
 |---|---|---|
 | `bash` | `Bash` | `block_destructive_bash.py` |

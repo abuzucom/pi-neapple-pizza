@@ -1,15 +1,21 @@
 /**
- * Route pi tool calls through the canonical policy gates.
+ * Route pi tool calls through the policy broker.
  *
  * The adopted policy registers gates for Claude, Codex, Gemini, and
  * Antigravity. pi runs in this repository as an agent client, and no
  * registration covers it. This extension closes that gap by asking the
- * Python adapter in `hooks/pi_client_gate.py` for a decision before every
- * pi tool call runs.
+ * broker in `broker/pi_broker.py` for a decision before every pi tool call
+ * runs.
+ *
+ * The broker runs the unchanged canonical gates outside the repository. It
+ * pins the digest of every gate in the decision path, records every decision
+ * in an append-only log, and consumes one approval per act that a human
+ * accepted.
  *
  * The extension holds no policy of its own. It forwards the call, reads the
- * canonical decision, and blocks the call when the gate denies it. A gate
- * that cannot run, or a decision that cannot be read, denies the call.
+ * decision, and blocks the call when the decision denies it. A decision that
+ * needs an answer from a human reaches the operator through the client, and
+ * the broker consumes the approval that follows.
  *
  * Load the extension without a project resource directory:
  *
@@ -24,17 +30,19 @@ import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const GATE_SCRIPT = join(ROOT, "hooks", "pi_client_gate.py");
-const GATE_TIMEOUT_MS = 120000;
+const BROKER_SCRIPT = join(ROOT, "broker", "pi_broker.py");
+const BROKER_TIMEOUT_MS = 120000;
 const MAX_OUTPUT_CHARACTERS = 1048576;
 const MAX_DIAGNOSTIC_CHARACTERS = 4096;
 const DEFAULT_PYTHON = "python";
 
-export interface GateDecision {
-	decision: "allow" | "deny";
+export interface BrokerDecision {
+	decision: "allow" | "deny" | "ask";
 	reason?: string;
 	context?: string;
 	warning?: string;
+	approval?: string;
+	record?: string;
 }
 
 function pythonExecutable(): string {
@@ -42,22 +50,22 @@ function pythonExecutable(): string {
 }
 
 /**
- * Ask the canonical adapter for one decision.
+ * Ask the broker for one decision or one approval.
  *
- * The adapter runs the unchanged canonical gates and reports their verdict.
- * Every failure path denies, because a call the policy cannot clear must
- * not reach the operating system.
+ * The broker runs the canonical gates and records the outcome. Every
+ * failure path denies, because a call the policy cannot clear must not reach
+ * the operating system.
  */
-export function runPolicyGate(event: "tool" | "session", request: Record<string, unknown>): Promise<GateDecision> {
-	return new Promise<GateDecision>((resolve) => {
-		const child = spawn(pythonExecutable(), ["-E", "-s", GATE_SCRIPT, "--event", event], {
+export function runBroker(command: "decide" | "approve", request: Record<string, unknown>): Promise<BrokerDecision> {
+	return new Promise<BrokerDecision>((resolve) => {
+		const child = spawn(pythonExecutable(), ["-E", "-s", BROKER_SCRIPT, command], {
 			cwd: ROOT,
 			stdio: ["pipe", "pipe", "pipe"],
 		});
 		let stdout = "";
 		let diagnostics = "";
 		let settled = false;
-		const finish = (decision: GateDecision): void => {
+		const finish = (decision: BrokerDecision): void => {
 			if (settled) {
 				return;
 			}
@@ -67,14 +75,14 @@ export function runPolicyGate(event: "tool" | "session", request: Record<string,
 		};
 		const timer = setTimeout(() => {
 			child.kill();
-			finish({ decision: "deny", reason: "the policy gate did not answer within the time bound" });
-		}, GATE_TIMEOUT_MS);
+			finish({ decision: "deny", reason: "the policy broker did not answer within the time bound" });
+		}, BROKER_TIMEOUT_MS);
 		child.stdout.setEncoding("utf8");
 		child.stdout.on("data", (chunk: string) => {
 			stdout += chunk;
 			if (stdout.length > MAX_OUTPUT_CHARACTERS) {
 				child.kill();
-				finish({ decision: "deny", reason: "the policy gate response exceeded the inspection bound" });
+				finish({ decision: "deny", reason: "the policy broker response exceeded the inspection bound" });
 			}
 		});
 		child.stderr.setEncoding("utf8");
@@ -82,7 +90,7 @@ export function runPolicyGate(event: "tool" | "session", request: Record<string,
 			diagnostics = (diagnostics + chunk).slice(0, MAX_DIAGNOSTIC_CHARACTERS);
 		});
 		child.on("error", (error: Error) => {
-			finish({ decision: "deny", reason: `the policy gate could not run: ${error.message}` });
+			finish({ decision: "deny", reason: `the policy broker could not run: ${error.message}` });
 		});
 		child.on("close", (code: number | null) => {
 			if (settled) {
@@ -93,20 +101,20 @@ export function runPolicyGate(event: "tool" | "session", request: Record<string,
 				const detail = diagnostics.trim();
 				finish({
 					decision: "deny",
-					reason: detail || `the policy gate returned no readable decision (exit ${code})`,
+					reason: detail || `the policy broker returned no readable decision (exit ${code})`,
 				});
 				return;
 			}
 			finish(parsed);
 		});
 		child.stdin.on("error", () => {
-			// The gate can exit before reading the request.
+			// The broker can exit before reading the request.
 		});
 		child.stdin.end(JSON.stringify(request));
 	});
 }
 
-function parseDecision(stdout: string): GateDecision | undefined {
+function parseDecision(stdout: string): BrokerDecision | undefined {
 	const text = stdout.trim();
 	if (!text) {
 		return undefined;
@@ -120,27 +128,29 @@ function parseDecision(stdout: string): GateDecision | undefined {
 	if (!parsed || typeof parsed !== "object") {
 		return undefined;
 	}
-	const candidate = parsed as GateDecision;
-	if (candidate.decision !== "allow" && candidate.decision !== "deny") {
+	const candidate = parsed as BrokerDecision;
+	if (candidate.decision !== "allow" && candidate.decision !== "deny" && candidate.decision !== "ask") {
 		return undefined;
 	}
 	return candidate;
 }
 
-function denialText(decision: GateDecision): string {
+function denialText(decision: BrokerDecision): string {
 	return [decision.reason, decision.context].filter((part) => Boolean(part)).join("\n\n");
 }
 
 /**
- * Register the pi gate adapter.
+ * Register the pi policy broker client.
  *
  * The session start reports the branch preflight and the identity advisory.
- * Every tool call asks the adapter for a decision, and a denial blocks the
- * call before it reaches the operating system.
+ * Every tool call asks the broker for a decision, and a denial blocks the
+ * call before it reaches the operating system. A decision that needs an
+ * answer from a human reaches the operator through the client, and the
+ * broker consumes the approval that follows.
  */
 export default function agentsGate(pi: ExtensionAPI): void {
 	pi.on("session_start", async (_event, ctx) => {
-		const decision = await runPolicyGate("session", { cwd: ctx.cwd });
+		const decision = await runBroker("decide", { cwd: ctx.cwd });
 		if (decision.decision === "deny") {
 			if (ctx.hasUI) {
 				ctx.ui.notify(`pi policy gate blocked this session.\n${denialText(decision)}`, "warning");
@@ -153,14 +163,48 @@ export default function agentsGate(pi: ExtensionAPI): void {
 	});
 
 	pi.on("tool_call", async (event, ctx) => {
-		const decision = await runPolicyGate("tool", {
+		const request = {
 			tool: event.toolName,
 			arguments: event.input as Record<string, unknown>,
 			cwd: ctx.cwd,
-		});
-		if (decision.decision === "deny") {
-			return { block: true, reason: denialText(decision) || "the policy gate denied this call" };
+		};
+		const decision = await runBroker("decide", request);
+		if (decision.decision === "allow") {
+			return undefined;
 		}
-		return undefined;
+		if (decision.decision === "ask") {
+			if (!ctx.hasUI) {
+				return {
+					block: true,
+					reason: denialText(decision) || "the act needs an answer from the active human",
+				};
+			}
+			const accepted = await ctx.ui.confirm(
+				"The policy broker needs an answer from you",
+				`Allow this act?\n\n${denialText(decision)}`,
+			);
+			if (!accepted) {
+				return {
+					block: true,
+					reason: denialText(decision) || "the active human declined the act",
+				};
+			}
+			const approval = await runBroker("approve", request);
+			if (!approval.approval) {
+				return {
+					block: true,
+					reason: "the policy broker recorded no approval for the act",
+				};
+			}
+			const confirmed = await runBroker("decide", { ...request, approval: approval.approval });
+			if (confirmed.decision === "allow") {
+				return undefined;
+			}
+			return {
+				block: true,
+				reason: denialText(confirmed) || "the policy broker denied the approved act",
+			};
+		}
+		return { block: true, reason: denialText(decision) || "the policy broker denied this call" };
 	});
 }
