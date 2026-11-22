@@ -1,7 +1,7 @@
 .PHONY: sync check lint test identity changelog
 PYTHON ?= python
 PROSE_FILES = AGENTS.md README.md CHANGELOG.md DRIFT.md CONTRIBUTING.md SECURITY.md \
-	docs/project-orientation.md docs/pi-architecture.md \
+	docs/project-orientation.md docs/pi-architecture.md docs/pi-policy.md \
 	plan/HANDOFF.md.example SECURITY.md.example CONTRIBUTING.md.example \
 	.github/PULL_REQUEST_TEMPLATE.md .github/ISSUE_TEMPLATE.md
 

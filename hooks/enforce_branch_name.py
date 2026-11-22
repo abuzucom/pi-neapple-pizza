@@ -918,7 +918,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--client",
-        choices=("claude", "codex", "gemini", "antigravity"),
+        choices=("claude", "codex", "gemini", "antigravity", "pi"),
         default="claude",
     )
     args = parser.parse_args()

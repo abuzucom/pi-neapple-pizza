@@ -27,6 +27,7 @@
 		"includes": [
 			"scripts/model-catalog-protocol.ts",
 			"scripts/model-catalog-protocol.test.ts",
+			"integrations/**/*.ts",
 			"packages/*/src/**/*.ts",
 			"packages/*/test/**/*.ts",
 			"packages/ai/catalog/**/*.ts",

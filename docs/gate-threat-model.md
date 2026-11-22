@@ -321,6 +321,22 @@ reason.
   the top-level exception boundary. Narrow OS-boundary tests cover out-of-tree
   paths and open errors. The tests also cover the hard-link budget and ordinary
   denial paths.
+- The pi adapter entries retain the failure paths of the environment it reads.
+  `pi_client_gate.py::run_gate` retains an absent gate, an oversized gate
+  response, and an unreadable gate response. A canonical gate is part of the
+  adopted tree, and the adapter reads a bounded response from it.
+  `pi_client_gate.py::read_decision` retains a response without the Claude
+  decision shape, an allow decision beside a nonzero exit, and an unsupported
+  decision. The canonical gates report one shape, and the adapter refuses the
+  others.
+  `pi_client_gate.py::check_adoption` retains an absent checker, a checker that
+  cannot run, and a checker that rejects the set.
+  `pi_client_gate.py::inspect_tool` and `pi_client_gate.py::inspect_session`
+  retain the denial that follows an incomplete gate set.
+  A rejected gate set means the adopted tree is broken, and the adapter
+  denies every call until an operator repairs the tree.
+  The adapter tests cover the ordinary allow, the ordinary deny, the malformed
+  request, the unknown tool, the branch preflight, and the identity advisory.
 
 CI runs `scripts/check_hook_coverage.py`. The script compares the run against
 `hook-coverage-baseline.json`. Per-function counts prevent churn from edits
