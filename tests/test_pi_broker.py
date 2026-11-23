@@ -168,6 +168,27 @@ class BrokerStateTest(unittest.TestCase):
         answer = json.loads(result.stdout)
         self.assertFalse(str(Path(answer["state"]).resolve()).startswith(str(ROOT)))
 
+    def test_the_state_directory_is_private(self):
+        if os.name == "nt":
+            self.skipTest("the mode bits do not apply on this platform")
+        self.pin()
+        mode = (self.state).stat().st_mode & 0o777
+        self.assertEqual(mode, 0o700)
+
+    def test_a_truncated_log_breaks_the_chain(self):
+        self.pin()
+        self.decide({"tool": "bash", "arguments": {"command": "echo one"},
+                     "cwd": str(self.repository)})
+        self.decide({"tool": "bash", "arguments": {"command": "echo two"},
+                     "cwd": str(self.repository)})
+        log = self.state / "decisions.jsonl"
+        lines = log.read_text(encoding="utf-8").splitlines()
+        log.write_text(lines[1] + "\n", encoding="utf-8")
+        answer = self.decide({"tool": "bash", "arguments": {"command": "echo three"},
+                              "cwd": str(self.repository)})
+        self.assertEqual(answer["decision"], "deny")
+        self.assertIn("chain", answer["reason"])
+
 
 class ChangedGateTest(unittest.TestCase):
     """A gate that changed after the pin loses the decision."""
@@ -202,6 +223,15 @@ class ChangedGateTest(unittest.TestCase):
             "cwd": str(self.tree)})
         self.assertEqual(answer["decision"], "deny")
         self.assertIn("changed after the pin", answer["reason"])
+
+    def test_a_new_gate_denies_the_call(self):
+        self.run_broker("pin")
+        (self.tree / "hooks" / "extra_gate.py").write_text("print('x')\n", encoding="utf-8")
+        answer = self.run_broker("decide", {
+            "tool": "bash", "arguments": {"command": "echo hello"},
+            "cwd": str(self.tree)})
+        self.assertEqual(answer["decision"], "deny")
+        self.assertIn("does not record", answer["reason"])
 
 
 if __name__ == "__main__":

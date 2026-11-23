@@ -9,9 +9,10 @@ things that a repository cannot hold safely.
 The pin records the digest of every gate file in the decision path and the
 digest of the broker itself. The decision path holds the files under
 `hooks/`, the broker, and the pi extension. The broker compares the recorded
-digests with the files on disk before every decision. A gate that changed
-after the pin was written loses the decision until a person pins the change
-again.
+digests and the recorded file set with the files on disk before every
+decision. A gate that changed after the pin was written loses the decision
+until a person pins the change again. A gate that the pin does not record
+loses the decision as well.
 
 The shared manifest holds the digest of every file that must stay identical
 across the repositories that adopt these gates. The broker compares the files
@@ -25,9 +26,10 @@ python broker/pi_broker.py pin
 
 The state directory holds the pin, the audit log, and the approvals. It
 lives outside the repository. The tools that reach the repository cannot
-reach the state directory. The operating system boundary that keeps an agent
-out of the state directory belongs to the sandbox work and is not in place
-yet.
+reach the state directory. The broker creates the directory with
+owner-only permissions, because the directory holds the approval tokens.
+The operating system boundary that keeps an agent out of the state directory
+belongs to the sandbox work and is not in place yet.
 
 ## The audit log
 
@@ -40,6 +42,10 @@ the log.
 The log records the ask that carried a question to the operator and the
 decision that followed the approval. The approval token stays out of the log,
 so the log never holds a secret.
+
+The broker verifies the chain before every decision. A record that was
+changed, removed, or reordered breaks the chain, and a log that lost its first
+lines breaks it as well. A broken chain loses the decision.
 
 ## The approvals
 
