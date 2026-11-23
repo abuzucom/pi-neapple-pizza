@@ -133,6 +133,18 @@ class BrokerStateTest(unittest.TestCase):
         answer = self.decide({**second, "approval": approval["approval"]})
         self.assertNotEqual(answer["decision"], "allow")
 
+    def test_an_approval_covers_one_act(self):
+        self.pin()
+        request = {"tool": "write",
+                   "arguments": {"path": str(ROOT / "tests" / "test_pi_broker.py"),
+                                 "content": "changed\n"},
+                   "cwd": str(self.repository)}
+        approval = run_broker(self.state, "approve", request)
+        first = self.decide({**request, "approval": approval["approval"]})
+        self.assertEqual(first["decision"], "allow")
+        second = self.decide({**request, "approval": approval["approval"]})
+        self.assertEqual(second["decision"], "ask")
+
     def test_the_log_links_every_record(self):
         self.pin()
         self.decide({"tool": "bash", "arguments": {"command": "echo one"},

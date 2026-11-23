@@ -234,6 +234,9 @@ The coupled client changes activate in one complete transaction.
   keep the original adoption inventory unchanged.
 - D034 and D035 apply the sweep change to this repository's copy of the
   shared gate core.
+  The sweep resolves its root before the walk, because Git reports the
+  resolved repository root and a linked or short path never matched the
+  ignored directory list.
   The upstream pull request 154 carries the same change.
   The two copies differ because this repository adopted the gate core at
   `24f62e1` and the upstream file moved on since then.

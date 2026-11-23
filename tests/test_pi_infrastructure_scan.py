@@ -8,6 +8,7 @@ carries a protected marker, or that holds one at the first level below it,
 stays in the sweep, so an ignore rule cannot hide a credential directory.
 """
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -127,6 +128,36 @@ class IgnoredDirectoryScanTest(unittest.TestCase):
         with patch.object(_gate_core.os, "scandir", side_effect=refuse):
             self.clear_caches()
             self.assertTrue(_gate_core.tree_contains_protected_infrastructure(self.root))
+
+    def test_a_linked_root_still_skips(self):
+        # Git reports the resolved repository root. A linked path must reach
+        # the same answer, or no directory is skipped on a host where the
+        # temporary path carries a link.
+        self.write_protected_file("build")
+        link = Path(self.root).parent / (Path(self.root).name + "-link")
+        self.addCleanup(self.remove_link, link)
+        self.create_link(link, Path(self.root))
+        self.clear_caches()
+        self.assertFalse(_gate_core.tree_contains_protected_infrastructure(str(link)))
+
+    def create_link(self, link: Path, target: Path):
+        """Create a directory link that needs no elevated privilege."""
+        if os.name == "nt":
+            environment = dict(os.environ)
+            environment["MSYS_NO_PATHCONV"] = "1"
+            result = subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(link), str(target)],
+                capture_output=True, text=True, env=environment, check=False)
+            if result.returncode == 0:
+                return
+        link.symlink_to(target, target_is_directory=True)
+
+    def remove_link(self, link: Path):
+        """Remove the directory link the fixture created."""
+        if link.is_symlink():
+            link.unlink()
+        elif link.exists():
+            shutil.rmtree(link, ignore_errors=True)
 
 
 class IgnoredPathQueryTest(unittest.TestCase):

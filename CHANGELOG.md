@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.6] (2026-11-22)
+
+### Fixed
+
+- Resolve the sweep root before the walk in `hooks/_gate_core.py`.
+  Git reports the resolved repository root.
+  A linked or short temporary path never matched the ignored directory
+  list, so no directory was skipped on macOS and Windows.
+- Refuse a replayed approval in `broker/pi_broker.py`.
+  A token that already holds a consumption record never matches again.
+  An operating-system lock covers the read, the match, and the append.
+  Two brokers cannot consume one approval at the same time.
+
 ## [0.3.5] (2026-11-22)
 
 ### Added
