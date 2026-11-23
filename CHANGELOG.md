@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.8] (2026-11-22)
+## [0.3.9] (2026-11-22)
 
 ### Fixed
 
@@ -27,6 +27,11 @@
   The cache holds one file state, not one process lifetime.
 - Reduce the broker output to plain text before the confirmation prompt
   in `integrations/pi/agents-gate.ts`.
+- Record the read failure arm of the manifest cache in the coverage
+  baseline.
+  A file that vanishes between the stat and the read reaches it, and a
+  test cannot create that race without a fault injection the gate does
+  not carry.
 
 ## [0.3.7] (2026-11-22)
 

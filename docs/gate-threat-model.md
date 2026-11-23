@@ -317,6 +317,10 @@ reason.
   or linked `.git/HEAD`. A portable test cannot create that filesystem race.
 - `load_policy` retains the post-read size check for policy growth after
   `lstat`. A deterministic test cannot create that filesystem race.
+- `_cached_manifest_text` retains the read failure arm.
+  A file that vanishes between the stat and the read reaches it, and a
+  test cannot create that race without a fault injection the gate does
+  not carry.
 - The consent entries retain cross-drive path handling, absent path fields, and
   the top-level exception boundary. Narrow OS-boundary tests cover out-of-tree
   paths and open errors. The tests also cover the hard-link budget and ordinary
