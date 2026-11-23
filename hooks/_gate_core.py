@@ -972,6 +972,10 @@ def _raise_walk_error(error: OSError) -> None:
 
 def tree_contains_protected_infrastructure(root: str, include: str = "") -> bool:
     """Return whether a bounded search root contains protected files."""
+    # The ignored directory list comes from Git, which reports the resolved
+    # repository root. The walk must use the same root, or a linked or short
+    # path never matches the list and no directory is skipped.
+    root = os.path.realpath(root)
     ignored = _ignored_directory_paths(root)
     seen = 0
     try:

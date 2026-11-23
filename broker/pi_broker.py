@@ -37,6 +37,7 @@ import secrets
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,6 +112,30 @@ def log_path(directory: Path) -> Path:
 def approvals_path(directory: Path) -> Path:
     """Return the path of the approval store."""
     return directory / "approvals.jsonl"
+
+
+@contextmanager
+def approval_lock(directory: Path):
+    """Keep the operating-system lock while the approval store changes.
+
+    The lock covers the read, the match, and the append, so two brokers
+    cannot consume one approval at the same time.
+    """
+    path = directory / "approvals.lock"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+b") as stream:
+        stream.seek(0)
+        if os.name == "nt":
+            import msvcrt
+            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if os.fstat(stream.fileno()).st_size == 0:
+            stream.write(b"\0")
+            stream.flush()
+            os.fsync(stream.fileno())
+        yield
 
 
 def request_digest(request: dict) -> str:
@@ -293,17 +318,33 @@ def record_approval(directory: Path, request: dict) -> int:
         "token": token,
     }
     directory.mkdir(parents=True, exist_ok=True)
-    append_record(approvals_path(directory), record)
+    with approval_lock(directory):
+        append_record(approvals_path(directory), record)
     print(json.dumps({"approval": token, "request": record["request"]}))
     return 0
 
 
 def consume_approval(directory: Path, digest: str, token: str) -> bool:
-    """Return whether a matching approval was consumed for one request."""
-    for record in read_approvals(directory):
-        if record.get("token") != token:
-            continue
-        if record.get("request") != digest:
+    """Return whether a matching approval was consumed for one request.
+
+    An approval covers one act and one act only. A token that already holds a
+    consumption record never matches again, and the lock keeps two brokers
+    from consuming one approval at the same time.
+    """
+    with approval_lock(directory):
+        records = read_approvals(directory)
+        issued = None
+        consumed = False
+        for record in records:
+            if record.get("token") != token:
+                continue
+            if record.get("consumed"):
+                consumed = True
+                continue
+            issued = record
+        if issued is None or consumed:
+            return False
+        if issued.get("request") != digest:
             return False
         append_record(approvals_path(directory), {
             "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -312,7 +353,6 @@ def consume_approval(directory: Path, digest: str, token: str) -> bool:
             "consumed": True,
         })
         return True
-    return False
 
 
 def decide_command(request: dict) -> int:
