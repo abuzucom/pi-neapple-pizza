@@ -12,6 +12,7 @@
     "_gate_core.py::_alias_write_label": 3,
     "_gate_core.py::_apply_git_config_argument": 1,
     "_gate_core.py::_apply_git_environment_locations": 7,
+    "_gate_core.py::_cached_manifest_text": 1,
     "_gate_core.py::_discover_dot_git": 3,
     "_gate_core.py::_environment_config": 1,
     "_gate_core.py::_exec_capable_key": 1,
