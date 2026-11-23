@@ -39,7 +39,12 @@ class BrokerStateTest(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.state = Path(temporary.name).resolve()
-        self.repository = Path(tempfile.mkdtemp()).resolve()
+        # The broker answers calls for a session directory inside the
+        # repository. The fixture keeps its own Git context in a staged
+        # directory, so the branch preflight reads the fixture branch.
+        staging = ROOT / ".gate-staging"
+        staging.mkdir(parents=True, exist_ok=True)
+        self.repository = Path(tempfile.mkdtemp(dir=str(staging))).resolve()
         self.addCleanup(shutil.rmtree, self.repository, True)
         for arguments in (["init", "-q", "-b", "main"],
                           ["config", "user.name", "Test User"],
@@ -53,6 +58,9 @@ class BrokerStateTest(unittest.TestCase):
                        cwd=str(self.repository), check=True, capture_output=True)
         subprocess.run(["git", "checkout", "-q", "-b", "feat/broker-test"],
                        cwd=str(self.repository), check=True, capture_output=True)
+        tests = self.repository / "tests"
+        tests.mkdir()
+        (tests / "test_fixture.py").write_text("def test_one():\n    pass\n", encoding="utf-8")
 
     def pin(self) -> dict:
         """Record the current digests in the state directory."""

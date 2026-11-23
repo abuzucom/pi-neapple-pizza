@@ -771,18 +771,26 @@ def prohibited_command_verdict(program: str, args: list) -> tuple:
     return "", ""
 
 
-@lru_cache(maxsize=None)
 def _infrastructure_manifest_text(path: str) -> str:
     """Return a bounded manifest prefix without exposing it to the caller.
 
-    The result is cached for one hook run. A sweep over a large repository
-    reaches the same file through several paths, and the cache keeps the
-    sweep to one read per file.
+    The result is cached for one file state. A sweep over a large
+    repository reaches the same file through several paths, and the cache
+    keeps the sweep to one read per file. A file that changes reads again.
     """
     try:
         details = os.stat(path)
-        if not os.path.isfile(path) or details.st_size > MAX_INFRASTRUCTURE_FILE_BYTES:
-            return ""
+    except OSError:
+        return ""
+    if not os.path.isfile(path) or details.st_size > MAX_INFRASTRUCTURE_FILE_BYTES:
+        return ""
+    return _cached_manifest_text(path, (details.st_mtime_ns, details.st_size))
+
+
+@lru_cache(maxsize=None)
+def _cached_manifest_text(path: str, stamp: tuple) -> str:
+    """Return the manifest prefix of one file in one file state."""
+    try:
         with open(path, encoding="utf-8") as handle:
             return handle.read(MAX_INFRASTRUCTURE_FILE_BYTES)
     except (OSError, UnicodeError):
@@ -917,7 +925,8 @@ def _ignored_directory_paths(root: str) -> frozenset:
         text = entry.decode("utf-8", "replace").strip()
         if not text.endswith("/"):
             continue
-        paths.add(os.path.normcase(os.path.join(top_level, text.rstrip("/"))))
+        candidate = os.path.join(top_level, text.rstrip("/"))
+        paths.add(os.path.normcase(os.path.realpath(candidate)))
     return frozenset(paths)
 
 
@@ -958,7 +967,7 @@ def _skip_scan_directory(name: str, path: str, ignored: frozenset) -> bool:
         return True
     if not ignored:
         return False
-    if os.path.normcase(path) not in ignored:
+    if os.path.normcase(os.path.realpath(path)) not in ignored:
         return False
     if _carries_protected_marker(path):
         return False

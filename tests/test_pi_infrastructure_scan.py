@@ -38,7 +38,7 @@ class IgnoredDirectoryScanTest(unittest.TestCase):
     def clear_caches(self):
         """Drop the per-process caches the sweep and the manifest read hold."""
         _gate_core._ignored_directory_paths.cache_clear()
-        _gate_core._infrastructure_manifest_text.cache_clear()
+        _gate_core._cached_manifest_text.cache_clear()
 
     def ignore(self, pattern: str):
         """Add one ignore rule to the fixture repository."""
@@ -212,16 +212,14 @@ class IgnoredPathQueryTest(unittest.TestCase):
 
 
 class ManifestReadCacheTest(unittest.TestCase):
-    """The manifest prefix is read once per process."""
+    """The manifest prefix is read once per file state."""
 
-    def test_manifest_text_is_cached(self):
+    def test_manifest_text_follows_the_file(self):
         with tempfile.TemporaryDirectory() as root:
             path = Path(root, "manifest.yaml")
             path.write_text("apiVersion: v1\nkind: ConfigMap\n", encoding="utf-8")
             self.assertTrue(_gate_core.is_protected_infrastructure_path(str(path), root))
             path.write_text("plain: value\n", encoding="utf-8")
-            self.assertTrue(_gate_core.is_protected_infrastructure_path(str(path), root))
-            _gate_core._infrastructure_manifest_text.cache_clear()
             self.assertFalse(_gate_core.is_protected_infrastructure_path(str(path), root))
 
 

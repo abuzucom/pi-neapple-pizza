@@ -47,6 +47,9 @@ The broker verifies the chain before every decision. A record that was
 changed, removed, or reordered breaks the chain, and a log that lost its first
 lines breaks it as well. A broken chain loses the decision.
 
+The approval store carries the same chain, and the broker verifies it before
+it matches an approval.
+
 ## The approvals
 
 A gate that needs an answer from the active human returns an ask. The broker
@@ -75,7 +78,8 @@ belongs to the sandbox work.
 | `status` | Report the pin, the approvals, and the log. |
 
 A request names the tool, the arguments, and the session directory. A request
-without a tool is a session start.
+without a tool is a session start. The session directory must sit inside the
+repository, so a request cannot point the gates at another repository.
 
 ```text
 echo '{"tool":"bash","arguments":{"command":"echo hello"},"cwd":"/path"}' \

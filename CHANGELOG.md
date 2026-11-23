@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.8] (2026-11-22)
+
+### Fixed
+
+- Keep the digest of an oversized audit record in step with its line in
+  `broker/pi_broker.py`.
+  The chain no longer breaks when a record exceeds the line bound.
+- Retry a held approval lock in `broker/pi_broker.py`.
+  The broker waits a bounded number of times before it fails closed, and
+  the reason names the contention.
+- Require the session directory to sit inside the repository in
+  `broker/pi_broker.py`.
+  A request can no longer point the gates at another repository.
+- Fail the pin when the shared manifest is absent in
+  `broker/pi_broker.py`.
+- Verify the approval store chain before a match in
+  `broker/pi_broker.py`.
+  A changed, removed, or reordered approval record loses the decision.
+- Record an approval only after the gate asks in `broker/pi_broker.py`.
+  An approval cannot answer an act the policy would have allowed or
+  denied.
+- Normalize the ignored paths that Git reports in `hooks/_gate_core.py`.
+- Read the manifest prefix again after the file changes in
+  `hooks/_gate_core.py`.
+  The cache holds one file state, not one process lifetime.
+- Reduce the broker output to plain text before the confirmation prompt
+  in `integrations/pi/agents-gate.ts`.
+
 ## [0.3.7] (2026-11-22)
 
 ### Fixed
