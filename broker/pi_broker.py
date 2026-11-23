@@ -166,7 +166,7 @@ def read_pin(directory: Path) -> dict:
 
 def write_pin(directory: Path) -> int:
     """Record the current digests of the decision path."""
-    directory.mkdir(parents=True, exist_ok=True)
+    ensure_state_directory(directory)
     digests = decision_path_files()
     manifest = shared_manifest_digests()
     mismatched = sorted(
@@ -196,6 +196,10 @@ def verify_pin(directory: Path) -> str:
     if not isinstance(recorded, dict) or not recorded:
         return "the recorded pin holds no digests"
     current = decision_path_files()
+    if set(current) != set(recorded):
+        return ("the decision path holds a file that the pin does not "
+                "record, or the pin records a file that the decision path "
+                "does not hold")
     for name in sorted(recorded):
         expected = recorded[name]
         actual = current.get(name)
@@ -271,6 +275,19 @@ def decide(request: dict) -> tuple:
     return decision, reason, context, ""
 
 
+def ensure_state_directory(directory: Path) -> None:
+    """Create the state directory with owner-only permissions.
+
+    The state directory holds the approval tokens, so another account on the
+    host must not read it.
+    """
+    directory.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(directory, 0o700)
+    except OSError:
+        pass
+
+
 def append_record(path: Path, record: dict) -> str:
     """Append one record to a file and return the digest of the line."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -290,9 +307,46 @@ def append_record(path: Path, record: dict) -> str:
                            "reason": "the audit record exceeds the line bound",
                            "previous": previous, "digest": digest},
                           sort_keys=True, separators=(",", ":"))
-    with open(path, "a", encoding="utf-8", newline="\n") as handle:
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    with os.fdopen(descriptor, "a", encoding="utf-8", newline="\n") as handle:
         handle.write(line + "\n")
     return digest
+
+
+def verify_audit_chain(directory: Path) -> str:
+    """Return a reason when the audit log chain is broken.
+
+    Every line carries the digest of the line before it and its own digest.
+    A record that was changed, removed, or reordered breaks the chain, and a
+    log that lost its first lines breaks it as well.
+    """
+    path = log_path(directory)
+    if not path.is_file():
+        return ""
+    previous = ""
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    return "the audit log holds a record that cannot be read"
+                if not isinstance(record, dict):
+                    return "the audit log holds a record that is not an object"
+                if record.get("previous") != previous:
+                    return "the audit log chain is broken"
+                digest = record.get("digest")
+                if not isinstance(digest, str) or not digest:
+                    return "the audit log holds a record without a digest"
+                body = {key: value for key, value in record.items() if key != "digest"}
+                if line_digest(body, previous) != digest:
+                    return "the audit log holds a record that does not match its digest"
+                previous = digest
+    except OSError as error:
+        return f"the audit log cannot be read: {bounded_reason(str(error))}"
+    return ""
 
 
 def read_approvals(directory: Path) -> list:
@@ -317,7 +371,7 @@ def record_approval(directory: Path, request: dict) -> int:
         "request": request_digest(validated),
         "token": token,
     }
-    directory.mkdir(parents=True, exist_ok=True)
+    ensure_state_directory(directory)
     with approval_lock(directory):
         append_record(approvals_path(directory), record)
     print(json.dumps({"approval": token, "request": record["request"]}))
@@ -358,7 +412,11 @@ def consume_approval(directory: Path, digest: str, token: str) -> bool:
 def decide_command(request: dict) -> int:
     """Answer one request and record the decision."""
     directory = state_directory()
+    ensure_state_directory(directory)
     failure = verify_pin(directory)
+    chain_failure = verify_audit_chain(directory)
+    if chain_failure:
+        failure = chain_failure
     validated = validate_request(request)
     digest = request_digest(validated)
     token = request.get("approval")
@@ -394,6 +452,7 @@ def status_command() -> int:
     directory = state_directory()
     pin = read_pin(directory)
     failure = verify_pin(directory)
+    chain_failure = verify_audit_chain(directory)
     approvals = read_approvals(directory)
     pending = [record for record in approvals if not record.get("consumed")]
     lines = 0
@@ -404,6 +463,7 @@ def status_command() -> int:
         "state": str(directory),
         "pinned": bool(pin),
         "pin_failure": failure,
+        "chain_failure": chain_failure,
         "approvals": len(approvals),
         "pending_approvals": len(pending),
         "records": lines,

@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.7] (2026-11-22)
+
+### Fixed
+
+- Verify the audit log chain before every decision in
+  `broker/pi_broker.py`.
+  The broker reads every record before it answers.
+  Any change to a record, any record out of place, and any log that lost
+  its first lines lose the decision.
+  A log that lost its first lines loses the decision as well.
+- Compare the pinned file set with the decision path in
+  `broker/pi_broker.py`.
+  The broker loses the decision when a gate does not match the pin.
+- Create the broker state directory with owner-only permissions in
+  `broker/pi_broker.py`.
+  The directory holds the approval tokens.
+
 ## [0.3.6] (2026-11-22)
 
 ### Fixed
@@ -7,7 +24,8 @@
 - Resolve the sweep root before the walk in `hooks/_gate_core.py`.
   Git reports the resolved repository root.
   A linked or short temporary path never matched the ignored directory
-  list, so no directory was skipped on macOS and Windows.
+  list.
+  The sweep skipped no directory on macOS and Windows.
 - Refuse a replayed approval in `broker/pi_broker.py`.
   A token that already holds a consumption record never matches again.
   An operating-system lock covers the read, the match, and the append.
