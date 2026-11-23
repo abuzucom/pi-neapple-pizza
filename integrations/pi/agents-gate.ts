@@ -35,6 +35,7 @@ const BROKER_TIMEOUT_MS = 120000;
 const MAX_OUTPUT_CHARACTERS = 1048576;
 const MAX_DIAGNOSTIC_CHARACTERS = 4096;
 const DEFAULT_PYTHON = "python";
+const MAX_DISPLAY_CHARACTERS = 2000;
 
 export interface BrokerDecision {
 	decision: "allow" | "deny" | "ask";
@@ -140,6 +141,17 @@ function denialText(decision: BrokerDecision): string {
 }
 
 /**
+ * Reduce broker output to plain text before it reaches the interface.
+ *
+ * The broker echoes text that came from the tool arguments, so the
+ * confirmation prompt must carry no control characters and no markup.
+ */
+function displayText(text: string): string {
+	const bounded = text.slice(0, MAX_DISPLAY_CHARACTERS);
+	return bounded.replace(/[\u0000-\u001f\u007f]/g, " ");
+}
+
+/**
  * Register the pi policy broker client.
  *
  * The session start reports the branch preflight and the identity advisory.
@@ -181,7 +193,7 @@ export default function agentsGate(pi: ExtensionAPI): void {
 			}
 			const accepted = await ctx.ui.confirm(
 				"The policy broker needs an answer from you",
-				`Allow this act?\n\n${denialText(decision)}`,
+				`Allow this act?\n\n${displayText(denialText(decision))}`,
 			);
 			if (!accepted) {
 				return {

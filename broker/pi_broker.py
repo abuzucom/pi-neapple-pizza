@@ -50,6 +50,8 @@ MAX_REASON_CHARACTERS = 512
 MAX_CONTEXT_CHARACTERS = 8192
 MAX_AUDIT_LINE_BYTES = 65536
 MAX_APPROVAL_RECORDS = 4096
+LOCK_ATTEMPTS = 5
+LOCK_BACKOFF_SECONDS = 0.2
 PIN_VERSION = 1
 
 
@@ -114,27 +116,42 @@ def approvals_path(directory: Path) -> Path:
     return directory / "approvals.jsonl"
 
 
+def _lock_once(stream) -> None:
+    """Take the exclusive lock on one open file."""
+    stream.seek(0)
+    if os.name == "nt":
+        import msvcrt
+        msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
 @contextmanager
 def approval_lock(directory: Path):
     """Keep the operating-system lock while the approval store changes.
 
     The lock covers the read, the match, and the append, so two brokers
-    cannot consume one approval at the same time.
+    cannot consume one approval at the same time. A held lock is retried a
+    bounded number of times before the call fails closed.
     """
     path = directory / "approvals.lock"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a+b") as stream:
-        stream.seek(0)
-        if os.name == "nt":
-            import msvcrt
-            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         if os.fstat(stream.fileno()).st_size == 0:
             stream.write(b"\0")
             stream.flush()
             os.fsync(stream.fileno())
+        for attempt in range(LOCK_ATTEMPTS):
+            try:
+                _lock_once(stream)
+                break
+            except OSError as error:
+                if attempt + 1 >= LOCK_ATTEMPTS:
+                    raise OSError(
+                        f"the approval store stayed locked after {LOCK_ATTEMPTS} "
+                        f"attempts: {bounded_reason(str(error))}") from error
+                time.sleep(LOCK_BACKOFF_SECONDS * (attempt + 1))
         yield
 
 
@@ -209,9 +226,14 @@ def verify_pin(directory: Path) -> str:
             return (f"the pinned file {name} changed after the pin, so the "
                     "decision fails closed")
     manifest = shared_manifest_digests()
+    if not manifest:
+        return ("the shared manifest is absent or unreadable, so the decision "
+                "path cannot be verified")
     for name, digest in manifest.items():
         actual = current.get(name)
-        if actual is not None and actual != digest:
+        if actual is None:
+            continue
+        if actual != digest:
             return (f"the shared file {name} no longer matches the shared "
                     "manifest")
     return ""
@@ -232,19 +254,27 @@ def read_request() -> dict:
 
 
 def validate_request(request: dict) -> dict:
-    """Return the request with the fields the decision path needs."""
+    """Return the request with the fields the decision path needs.
+
+    The session directory must sit inside the repository. A request that
+    names another directory would let the gates resolve a different
+    repository context.
+    """
     tool = request.get("tool")
     arguments = request.get("arguments")
     cwd = request.get("cwd")
     if not isinstance(cwd, str) or not cwd:
         raise ValueError("the request names no session directory")
+    resolved = os.path.realpath(cwd)
+    if resolved != str(ROOT) and not resolved.startswith(str(ROOT) + os.sep):
+        raise ValueError("the session directory sits outside the repository")
     if tool is None:
-        return {"cwd": cwd}
+        return {"cwd": resolved}
     if not isinstance(tool, str) or not tool.strip():
         raise ValueError("the request names no tool")
     if not isinstance(arguments, dict):
         raise ValueError("the request carries no tool arguments")
-    return {"tool": tool, "arguments": arguments, "cwd": cwd}
+    return {"tool": tool, "arguments": arguments, "cwd": resolved}
 
 
 def load_adapter():
@@ -299,14 +329,15 @@ def append_record(path: Path, record: dict) -> str:
                     previous = json.loads(line).get("digest", "")
     body = dict(record)
     body["previous"] = previous
-    digest = line_digest(body, previous)
-    body["digest"] = digest
+    body["digest"] = line_digest(body, previous)
     line = json.dumps(body, sort_keys=True, separators=(",", ":"))
     if len(line) > MAX_AUDIT_LINE_BYTES:
-        line = json.dumps({"time": body.get("time"), "decision": "deny",
-                           "reason": "the audit record exceeds the line bound",
-                           "previous": previous, "digest": digest},
-                          sort_keys=True, separators=(",", ":"))
+        body = {"time": body.get("time"), "decision": "deny",
+                "reason": "the audit record exceeds the line bound",
+                "previous": previous}
+        body["digest"] = line_digest(body, previous)
+        line = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    digest = body["digest"]
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
     with os.fdopen(descriptor, "a", encoding="utf-8", newline="\n") as handle:
         handle.write(line + "\n")
@@ -363,19 +394,66 @@ def read_approvals(directory: Path) -> list:
 
 
 def record_approval(directory: Path, request: dict) -> int:
-    """Record one approval for a request that a human accepted."""
+    """Record one approval for a request that a human accepted.
+
+    The approval answers a real gate decision. The broker records nothing
+    unless the gate asked for an answer, so an approval cannot be recorded
+    for an act the policy would have allowed or denied.
+    """
+    ensure_state_directory(directory)
+    failure = verify_pin(directory)
+    if failure:
+        raise OSError(failure)
     validated = validate_request(request)
+    decision, _reason, _context, _warning = decide(validated)
+    if decision != "ask":
+        raise OSError("the act needs no answer from the active human")
     token = secrets.token_hex(32)
     record = {
         "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "request": request_digest(validated),
         "token": token,
     }
-    ensure_state_directory(directory)
     with approval_lock(directory):
         append_record(approvals_path(directory), record)
     print(json.dumps({"approval": token, "request": record["request"]}))
     return 0
+
+
+def verify_approval_chain(directory: Path) -> str:
+    """Return a reason when the approval store chain is broken.
+
+    The store carries the digest of the line before it, so a record that
+    was changed, removed, or reordered breaks the chain.
+    """
+    path = approvals_path(directory)
+    if not path.is_file():
+        return ""
+    previous = ""
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except ValueError:
+                    return "the approval store holds a record that cannot be read"
+                if not isinstance(record, dict):
+                    return "the approval store holds a record that is not an object"
+                if record.get("previous") != previous:
+                    return "the approval store chain is broken"
+                digest = record.get("digest")
+                if not isinstance(digest, str) or not digest:
+                    return "the approval store holds a record without a digest"
+                body = {key: value for key, value in record.items() if key != "digest"}
+                if line_digest(body, previous) != digest:
+                    return ("the approval store holds a record that does not "
+                            "match its digest")
+                previous = digest
+    except OSError as error:
+        return f"the approval store cannot be read: {bounded_reason(str(error))}"
+    return ""
 
 
 def consume_approval(directory: Path, digest: str, token: str) -> bool:
@@ -386,6 +464,9 @@ def consume_approval(directory: Path, digest: str, token: str) -> bool:
     from consuming one approval at the same time.
     """
     with approval_lock(directory):
+        chain_failure = verify_approval_chain(directory)
+        if chain_failure:
+            raise OSError(chain_failure)
         records = read_approvals(directory)
         issued = None
         consumed = False
